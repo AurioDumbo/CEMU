@@ -1,7 +1,7 @@
-// backend/routes/estudantes.js
+
 const express = require('express');
 const router = express.Router();
-const db = require('../db/db'); // Importa o pool de conexões a partir de db.js
+const db = require('../db/db'); 
 
 // CREATE: Inserir um novo estudante
 router.post('/', async (req, res) => {
@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// READ: Obter todos os estudantes
+
 router.get('/', async (req, res) => {
     try {
         const [rows] = await db.execute('SELECT * FROM Estudante');
@@ -27,7 +27,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// READ: Obter um estudante por ID
 router.get('/:id', async (req, res) => {
     try {
         const [rows] = await db.execute('SELECT * FROM Estudante WHERE ID = ?', [req.params.id]);

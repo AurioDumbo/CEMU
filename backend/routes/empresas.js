@@ -1,9 +1,9 @@
-// backend/routes/empresas.js
+
 const express = require('express');
 const router = express.Router();
-const db = require('../db/db'); // Importa o pool de conexões
+const db = require('../db/db');
 
-// CREATE: Inserir uma nova empresa
+
 router.post('/', async (req, res) => {
     const { NIF, Nome, Provincia, Telefone, Email, Status } = req.body;
     try {
@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// READ: Obter todas as empresas
+
 router.get('/', async (req, res) => {
     try {
         const [rows] = await db.execute('SELECT * FROM Empresa');
@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// READ: Obter uma empresa por ID
+
 router.get('/:id', async (req, res) => {
     try {
         const [rows] = await db.execute('SELECT * FROM Empresa WHERE ID = ?', [req.params.id]);
@@ -40,7 +40,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// UPDATE: Atualizar uma empresa
+
 router.put('/:id', async (req, res) => {
     const { NIF, Nome, Provincia, Telefone, Email, Status } = req.body;
     try {
@@ -57,7 +57,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// DELETE: Remover uma empresa
+
 router.delete('/:id', async (req, res) => {
     try {
         const [result] = await db.execute('DELETE FROM Empresa WHERE ID = ?', [req.params.id]);

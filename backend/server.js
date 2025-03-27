@@ -2,14 +2,18 @@
 const express = require('express');
 const cors = require('cors');
 const db = require('../backend/db/db'); // Importa o pool criado em db.js
+
+const empresaCursoRoutes = require('./routes/empresaCurso');
 const estudantesRoutes = require('./routes/estudantes');
 const empresasRoutes = require('./routes/empresas');
+const estagiosRoutes = require('./routes/estagios');
+const feedbackEstagioRoutes = require('./routes/feedbackEstagio');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Teste de conexão
+
 (async () => {
     try {
         const connection = await db.getConnection();
@@ -23,6 +27,9 @@ app.use(express.json());
 // Rotas
 app.use('/api/estudantes', estudantesRoutes);
 app.use('/api/empresas', empresasRoutes);
+app.use('/api/empresa_curso',empresaCursoRoutes)
+app.use('/api/estagios',estagiosRoutes)
+app.use('/api/feedback', feedbackEstagioRoutes)
 
 // Rota de teste
 app.get('/', (req, res) => {
