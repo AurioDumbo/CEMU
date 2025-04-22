@@ -1,7 +1,6 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const User = require('../models/user'); 
-
+const { sign } = require('jsonwebtoken');
+const { hash, compare } = require('bcrypt');
+const User = require('../models/user');
 
 const register = async (req, res) => {
     const { email, password } = req.body;
@@ -12,7 +11,7 @@ const register = async (req, res) => {
             return res.status(400).json({ message: 'E-mail já está em uso' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await hash(password, 10);
         const newUser = await User.create({ email, password: hashedPassword });
 
         res.status(201).json({ message: 'Usuário registrado com sucesso', user: newUser });
@@ -21,7 +20,6 @@ const register = async (req, res) => {
         res.status(500).json({ message: 'Erro ao registrar usuário', error: error.message });
     }
 };
-
 
 const login = async (req, res) => {
     const { email, password } = req.body;
@@ -32,13 +30,12 @@ const login = async (req, res) => {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        console.log('Senha válida:', isPasswordValid);
+        const isPasswordValid = await compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.json({ token });
     } catch (error) {

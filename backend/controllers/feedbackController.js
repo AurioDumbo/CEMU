@@ -1,9 +1,8 @@
 const db = require('../config/db');
 
-exports.createFeedback = async (req, res) => {
+const createFeedback = async (req, res) => {
     const { Estagio_ID, Estudante_ID, Empresa_ID, Feedback, Comentario } = req.body;
 
-    // Validações
     if (!Estagio_ID || !Estudante_ID || !Empresa_ID || !Feedback || !Comentario) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
     }
@@ -20,27 +19,24 @@ exports.createFeedback = async (req, res) => {
     }
 };
 
-
-exports.getAllFeedbacks = async (req, res) => {
+const getAllFeedbacks = async (req, res) => {
     try {
-        const [rows] = await db.execute('SELECT * FROM Feedback');
+        const [rows] = await db.execute('SELECT * FROM FeedbackEstagio');
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-
-exports.getFeedbackById = async (req, res) => {
+const getFeedbackById = async (req, res) => {
     const { id } = req.params;
-
 
     if (!id || isNaN(id)) {
         return res.status(400).json({ error: 'O ID deve ser um número válido!' });
     }
 
     try {
-        const [rows] = await db.execute('SELECT * FROM Feedback WHERE ID = ?', [id]);
+        const [rows] = await db.execute('SELECT * FROM FeedbackEstagio WHERE ID = ?', [id]);
         if (rows.length === 0) {
             return res.status(404).json({ message: 'Feedback não encontrado' });
         }
@@ -50,12 +46,10 @@ exports.getFeedbackById = async (req, res) => {
     }
 };
 
-// UPDATE: Atualizar um feedback
-exports.updateFeedback = async (req, res) => {
+const updateFeedback = async (req, res) => {
     const { id } = req.params;
     const { Feedback, Comentario } = req.body;
 
-    // Validações
     if (!id || isNaN(id)) {
         return res.status(400).json({ error: 'O ID deve ser um número válido!' });
     }
@@ -80,11 +74,9 @@ exports.updateFeedback = async (req, res) => {
     }
 };
 
-// DELETE: Remover um feedback
-exports.deleteFeedback = async (req, res) => {
+const deleteFeedback = async (req, res) => {
     const { id } = req.params;
 
-    // Validação
     if (!id || isNaN(id)) {
         return res.status(400).json({ error: 'O ID deve ser um número válido!' });
     }
@@ -99,4 +91,12 @@ exports.deleteFeedback = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+};
+
+module.exports = {
+    createFeedback,
+    getAllFeedbacks,
+    getFeedbackById,
+    updateFeedback,
+    deleteFeedback,
 };

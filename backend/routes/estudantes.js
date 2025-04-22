@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const estudantesController = require('../controllers/estudantesController');
+const { createEstudante, getAllEstudantes, getEstudanteById, updateEstudante, deleteEstudante } = require('../controllers/estudantesController');
 
 // Rotas
-router.post('/', estudantesController.createEstudante);
-router.get('/', estudantesController.getAllEstudantes);
-router.get('/:id', estudantesController.getEstudanteById);
-router.put('/:id', estudantesController.updateEstudante);
-router.delete('/:id', estudantesController.deleteEstudante);
+router.post('/', createEstudante);
+router.get('/', getAllEstudantes);
+router.get('/:id', getEstudanteById);
+router.put('/:id', updateEstudante);
+router.delete('/:id', deleteEstudante);
 
 module.exports = router;

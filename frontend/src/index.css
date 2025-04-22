@@ -1,0 +1,12 @@
+/* filepath: c:\Users\aurio\OneDrive\Documentos\GitHub\CEMU\frontend\src\index.css */
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'PT Sans', sans-serif;
+}
+
+

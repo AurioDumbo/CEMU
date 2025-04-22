@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 
-const authenticateToken = (req, res, next) => {
-    const token = req.header('Authorization')?.split(' ')[1];
+const authMiddleware = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: 'Acesso negado. Token não fornecido.' });
+        return res.status(401).json({ error: 'Token não fornecido' });
     }
 
     try {
@@ -12,8 +12,8 @@ const authenticateToken = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        res.status(403).json({ message: 'Token inválido ou expirado.' });
+        return res.status(401).json({ error: 'Token inválido' });
     }
 };
 
-module.exports = authenticateToken;
+module.exports = authMiddleware;
