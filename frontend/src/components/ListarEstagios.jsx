@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import pesquisarIcon from '../assets/icons/pesquisar.svg';
 import filtroIcon from '../assets/icons/filtro.svg';
 import globoIcon from '../assets/icons/globo.svg';
 import calendarIcon from '../assets/icons/Calendar.svg';
@@ -21,6 +20,8 @@ export default function ListarEstagios() {
   const [loading, setLoading] = useState(true);
   const [selectAll, setSelectAll] = useState(false);
   const [selectedEstagios, setSelectedEstagios] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     fetchEstagios();
@@ -84,6 +85,12 @@ export default function ListarEstagios() {
     );
   });
 
+  // Calcular paginação
+  const totalPages = Math.ceil(filteredEstagios.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredEstagios.slice(startIndex, endIndex);
+
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
     setSelectedEstagios(filteredEstagios.map(estagio => estagio.ID));
@@ -111,6 +118,10 @@ export default function ListarEstagios() {
         alert('Erro ao excluir os estágios');
       }
     }
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -228,7 +239,7 @@ export default function ListarEstagios() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredEstagios.map((estagio) => (
+                {currentData.map((estagio) => (
                   <tr 
                     key={estagio.ID} 
                     className="hover:bg-gray-50 cursor-pointer"
@@ -305,6 +316,27 @@ export default function ListarEstagios() {
               </tbody>
             </table>
           )}
+        </div>
+
+        {/* Paginação */}
+        <div className="flex justify-center mt-4 space-x-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Anterior
+          </button>
+          <span className="px-4 py-2 text-sm font-medium text-gray-700">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Próximo
+          </button>
         </div>
       </div>
     </div>

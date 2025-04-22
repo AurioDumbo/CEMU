@@ -103,12 +103,12 @@ export default function DetalhesEstagio() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 p-6 ml-20">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">Detalhes do Estágio</h1>
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-8">
+            <div className="flex justify-between items-center mb-8 border-b pb-4">
+              <h1 className="text-3xl font-bold text-gray-800">Detalhes do Estágio</h1>
               <div className="flex space-x-4">
                 <button
                   onClick={() => navigate('/estagios')}
@@ -125,45 +125,90 @@ export default function DetalhesEstagio() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Informações do Estudante */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Informações do Estudante</h2>
-                <div className="space-y-2">
-                  <p><span className="font-medium">Nome:</span> {estagio.estudante_nome}</p>
-                  <p><span className="font-medium">Curso:</span> {estagio.estudante_curso}</p>
-                  <p><span className="font-medium">Faculdade:</span> {estagio.estudante_faculdade}</p>
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Informações do Estudante</h2>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 items-center">
+                    <span className="font-medium text-gray-700">Nome:</span>
+                    <span className="col-span-2 text-gray-900">{estagio.estudante_nome}</span>
+                  </div>
+                  <div className="grid grid-cols-3 items-center">
+                    <span className="font-medium text-gray-700">Curso:</span>
+                    <span className="col-span-2 text-gray-900">{estagio.estudante_curso}</span>
+                  </div>
+                  <div className="grid grid-cols-3 items-center">
+                    <span className="font-medium text-gray-700">Faculdade:</span>
+                    <span className="col-span-2 text-gray-900">{estagio.estudante_faculdade}</span>
+                  </div>
                 </div>
               </div>
 
               {/* Informações da Empresa */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Informações da Empresa</h2>
-                <div className="space-y-2">
-                  <p><span className="font-medium">Nome:</span> {estagio.empresa_nome}</p>
-                  <p><span className="font-medium">NIF:</span> {estagio.empresa_nif}</p>
-                  <p><span className="font-medium">Responsável:</span> {estagio.Responsavel_Nome}</p>
-                  <p><span className="font-medium">Telefone do Responsável:</span> {estagio.Responsavel_Telefone}</p>
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Informações da Empresa</h2>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 items-center">
+                    <span className="font-medium text-gray-700">Nome:</span>
+                    <span className="col-span-2 text-gray-900">{estagio.empresa_nome}</span>
+                  </div>
+                  <div className="grid grid-cols-3 items-center">
+                    <span className="font-medium text-gray-700">NIF:</span>
+                    <span className="col-span-2 text-gray-900">{estagio.empresa_nif}</span>
+                  </div>
+                  <div className="grid grid-cols-3 items-center">
+                    <span className="font-medium text-gray-700">Responsável:</span>
+                    <span className="col-span-2 text-gray-900">{estagio.Responsavel_Nome}</span>
+                  </div>
+                  <div className="grid grid-cols-3 items-center">
+                    <span className="font-medium text-gray-700">Telefone:</span>
+                    <span className="col-span-2 text-gray-900">{estagio.Responsavel_Telefone}</span>
+                  </div>
                 </div>
               </div>
 
               {/* Informações do Estágio */}
-              <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Informações do Estágio</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p><span className="font-medium">Tipo:</span> {getTipoEstagio(estagio.Tipo)}</p>
-                    <p><span className="font-medium">Modalidade:</span> {getModalidade(estagio.Modalidade)}</p>
-                    <p><span className="font-medium">Remunerado:</span> {getRemunerado(estagio.Remunerado)}</p>
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm md:col-span-2">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Informações do Estágio</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 items-center">
+                      <span className="font-medium text-gray-700">Tipo:</span>
+                      <span className="col-span-2 text-gray-900">{getTipoEstagio(estagio.Tipo)}</span>
+                    </div>
+                    <div className="grid grid-cols-3 items-center">
+                      <span className="font-medium text-gray-700">Modalidade:</span>
+                      <span className="col-span-2 text-gray-900">{getModalidade(estagio.Modalidade)}</span>
+                    </div>
+                    <div className="grid grid-cols-3 items-center">
+                      <span className="font-medium text-gray-700">Remunerado:</span>
+                      <span className="col-span-2 text-gray-900">{getRemunerado(estagio.Remunerado)}</span>
+                    </div>
                   </div>
-                  <div>
-                    <p><span className="font-medium">Província:</span> {estagio.Provincia}</p>
-                    <p><span className="font-medium">Município:</span> {estagio.Municipio}</p>
-                    <p><span className="font-medium">Rua:</span> {estagio.Rua}</p>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 items-center">
+                      <span className="font-medium text-gray-700">Província:</span>
+                      <span className="col-span-2 text-gray-900">{estagio.Provincia}</span>
+                    </div>
+                    <div className="grid grid-cols-3 items-center">
+                      <span className="font-medium text-gray-700">Município:</span>
+                      <span className="col-span-2 text-gray-900">{estagio.Municipio}</span>
+                    </div>
+                    <div className="grid grid-cols-3 items-center">
+                      <span className="font-medium text-gray-700">Rua:</span>
+                      <span className="col-span-2 text-gray-900">{estagio.Rua}</span>
+                    </div>
                   </div>
-                  <div>
-                    <p><span className="font-medium">Data de Início:</span> {formatDate(estagio.Inicio)}</p>
-                    <p><span className="font-medium">Data de Término:</span> {formatDate(estagio.Termino)}</p>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 items-center">
+                      <span className="font-medium text-gray-700">Início:</span>
+                      <span className="col-span-2 text-gray-900">{formatDate(estagio.Inicio)}</span>
+                    </div>
+                    <div className="grid grid-cols-3 items-center">
+                      <span className="font-medium text-gray-700">Término:</span>
+                      <span className="col-span-2 text-gray-900">{formatDate(estagio.Termino)}</span>
+                    </div>
                   </div>
                 </div>
               </div>

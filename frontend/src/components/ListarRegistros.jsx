@@ -12,6 +12,8 @@ const ListarRegistros = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -138,6 +140,16 @@ const ListarRegistros = () => {
         estudante.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
+  // Calcular paginação
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -237,7 +249,7 @@ const ListarRegistros = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredData.map((estudante) => (
+                    {currentData.map((estudante) => (
                       <tr key={estudante.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{estudante.nome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{estudante.curso.nome}</td>
@@ -284,7 +296,7 @@ const ListarRegistros = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredData.map((empresa) => (
+                    {currentData.map((empresa) => (
                       <tr key={empresa.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{empresa.nome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{empresa.nif}</td>
@@ -318,6 +330,27 @@ const ListarRegistros = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Paginação */}
+        <div className="flex justify-center mt-4 space-x-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Anterior
+          </button>
+          <span className="px-4 py-2 text-sm font-medium text-gray-700">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Próximo
+          </button>
         </div>
       </div>
     </div>

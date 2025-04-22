@@ -159,7 +159,22 @@ async function getEstagioById(req, res) {
     }
 
     try {
-        const [rows] = await db.execute('SELECT * FROM Estagio WHERE ID = ?', [id]);
+        const [rows] = await db.execute(`
+            SELECT 
+                e.*,
+                CONCAT(est.Nome, ' ', est.Sobrenome) as estudante_nome,
+                c.Nome as estudante_curso,
+                f.Nome as estudante_faculdade,
+                emp.Nome as empresa_nome,
+                emp.NIF as empresa_nif,
+                est.Estado as estudante_estado
+            FROM Estagio e
+            INNER JOIN Estudante est ON e.Estudante_ID = est.ID
+            INNER JOIN Curso c ON est.Curso_ID = c.ID
+            INNER JOIN Faculdade f ON est.Faculdade_ID = f.ID
+            INNER JOIN Empresa emp ON e.Empresa_ID = emp.ID
+            WHERE e.ID = ?
+        `, [id]);
 
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Estágio não encontrado!' });
@@ -167,6 +182,7 @@ async function getEstagioById(req, res) {
 
         res.status(200).json(rows[0]);
     } catch (error) {
+        console.error('Erro ao buscar estágio:', error);
         res.status(500).json({ error: error.message });
     }
 }
