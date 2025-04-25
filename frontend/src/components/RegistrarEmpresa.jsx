@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
 export default function RegistrarEmpresa({ onSuccess }) {
-  const navigate = useNavigate();
+  // Removed unused navigate variable
   const [cursos, setCursos] = useState([]);
   const [errors, setErrors] = useState({});
   const [cursosInteressados, setCursosInteressados] = useState([]);
@@ -115,9 +114,17 @@ export default function RegistrarEmpresa({ onSuccess }) {
         }
       }
 
-      toast.success('Empresa registrada com sucesso!');
       onSuccess();
-      navigate('/dashboard');
+      setFormData({
+        NIF: '',
+        Nome: '',
+        Provincia: '',
+        Telefone: '',
+        Email: '',
+        Status: 'Pendente'
+      });
+      setCursosInteressados([]);
+      toast.success('Empresa registrada com sucesso!');
     } catch (error) {
       console.error('Erro ao registrar empresa:', error);
       if (error.response?.data?.error) {
@@ -144,7 +151,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
             value={formData.NIF}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
           {errors.NIF && <p className="mt-1 text-sm text-red-600">{errors.NIF}</p>}
         </div>
@@ -160,7 +167,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
             value={formData.Nome}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
           {errors.Nome && <p className="mt-1 text-sm text-red-600">{errors.Nome}</p>}
         </div>
@@ -175,7 +182,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
             value={formData.Provincia}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="">Selecione a província</option>
             {provincias.map((provincia) => (
@@ -197,7 +204,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
             id="Telefone"
             value={formData.Telefone}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
           {errors.Telefone && <p className="mt-1 text-sm text-red-600">{errors.Telefone}</p>}
         </div>
@@ -212,7 +219,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
             id="Email"
             value={formData.Email}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
           {errors.Email && <p className="mt-1 text-sm text-red-600">{errors.Email}</p>}
         </div>
@@ -227,7 +234,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
             value={formData.Status}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="Pendente">Pendente</option>
             <option value="Ativo">Ativo</option>
@@ -255,7 +262,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
                       setCursosInteressados(cursosInteressados.filter(id => id !== curso.curso_id));
                     }
                   }}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                 />
                 <label htmlFor={`curso-${curso.curso_id}`} className="ml-2 block text-sm text-gray-900">
                   {curso.curso_nome}
@@ -270,16 +277,10 @@ export default function RegistrarEmpresa({ onSuccess }) {
       </div>
 
       <div className="flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancelar
-        </button>
+       
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
         >
           Salvar
         </button>

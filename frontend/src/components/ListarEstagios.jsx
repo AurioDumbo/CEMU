@@ -4,11 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import filtroIcon from '../assets/icons/filtro.svg';
 import globoIcon from '../assets/icons/globo.svg';
 import calendarIcon from '../assets/icons/Calendar.svg';
-import DashboardIcon from '../assets/icons/dashboard.svg?react';
-import AddIcon from '../assets/icons/add.svg?react';
-import MenuIcon from '../assets/icons/empresasestudantes.svg?react';
-import RelatorioIcon from '../assets/icons/relatorio.svg?react';
-import AvatarIcon from '../assets/icons/avatar.svg?react';
 import EditIcon from '../assets/icons/edit.svg?react';
 import DeleteIcon from '../assets/icons/delete.svg?react';
 
@@ -17,9 +12,7 @@ export default function ListarEstagios() {
   const [estagios, setEstagios] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [selectAll, setSelectAll] = useState(false);
-  const [selectedEstagios, setSelectedEstagios] = useState([]);
+  const [loading, setLoading] = useState(true);;
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
@@ -45,18 +38,6 @@ export default function ListarEstagios() {
     }
   };
 
-  const getStatusColor = (estado) => {
-    switch (estado?.toLowerCase()) {
-      case 'ativo':
-        return 'bg-green-500';
-      case 'inativo':
-        return 'bg-red-500';
-      case 'pendente':
-        return 'bg-yellow-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -90,19 +71,6 @@ export default function ListarEstagios() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredEstagios.slice(startIndex, endIndex);
-
-  const handleSelectAll = () => {
-    setSelectAll(!selectAll);
-    setSelectedEstagios(filteredEstagios.map(estagio => estagio.ID));
-  };
-
-  const handleSelectEstagio = (id) => {
-    if (selectedEstagios.includes(id)) {
-      setSelectedEstagios(selectedEstagios.filter(i => i !== id));
-    } else {
-      setSelectedEstagios([...selectedEstagios, id]);
-    }
-  };
 
   const handleEdit = (id) => {
     navigate(`/estagios/${id}/edit`);
@@ -208,14 +176,6 @@ export default function ListarEstagios() {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <input
-                      type="checkbox"
-                      checked={selectAll}
-                      onChange={handleSelectAll}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Estudante
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -245,14 +205,6 @@ export default function ListarEstagios() {
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => navigate(`/estagios/${estagio.ID}`)}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={selectedEstagios.includes(estagio.ID)}
-                        onChange={() => handleSelectEstagio(estagio.ID)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div>
@@ -284,10 +236,15 @@ export default function ListarEstagios() {
                       {formatDate(estagio.Inicio)} - {formatDate(estagio.Termino)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <span className={`inline-block w-2 h-2 rounded-full ${getStatusColor(estagio.estudante_estado)} mr-2`} />
-                        <span className="text-sm text-gray-900">{estagio.estudante_estado}</span>
-                      </div>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                        ${estagio.estudante_estado === 'Ativo'
+                          ? 'bg-green-100 text-green-800'
+                          : estagio.estudante_estado === 'Pendente'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                        }`}>
+                        {estagio.estudante_estado}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
@@ -341,4 +298,4 @@ export default function ListarEstagios() {
       </div>
     </div>
   );
-} 
+}

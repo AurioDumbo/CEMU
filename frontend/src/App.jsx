@@ -9,6 +9,9 @@ import ListarEstagios from './components/ListarEstagios';
 import DetalhesEstagio from './components/DetalhesEstagio';
 import ListarRegistros from './components/ListarRegistros';
 import Sidebar from './components/Sidebar';
+import EditarEstagio from './components/EditarEstagio';
+import EditarEstudante from './components/EditarEstudante';
+import EditarEmpresa from './components/EditarEmpresa';
 
 // Layout component que inclui a Sidebar
 const Layout = ({ children }) => {
@@ -54,28 +57,40 @@ function App() {
           element={token ? <Layout><RegisterStudent /></Layout> : <Navigate to="/login" />}
         />
         <Route
-          path="/register-student/:id"
-          element={token ? <Layout><RegisterStudent /></Layout> : <Navigate to="/login" />}
-        />
-        <Route
           path="/register-company"
           element={token ? <Layout><RegisterCompany /></Layout> : <Navigate to="/login" />}
         />
         <Route
-          path="/register-company/:id"
-          element={token ? <Layout><RegisterCompany /></Layout> : <Navigate to="/login" />}
+          path="/registros"
+          element={token ? <Layout><ListarRegistros /></Layout> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/empresas/:id/edit"
+          element={
+            token ? (
+              <Layout>
+                <EditarEmpresa />
+              </Layout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/estudante/:id/edit"
+          element={token ? <Layout><EditarEstudante /></Layout> : <Navigate to="/login" />}
         />
         <Route
           path="/estagios"
           element={token ? <Layout><ListarEstagios /></Layout> : <Navigate to="/login" />}
         />
         <Route
-          path="/estagios/:id"
-          element={token ? <Layout><DetalhesEstagio /></Layout> : <Navigate to="/login" />}
+          path="/estagios/:id/edit"
+          element={token ? <Layout><EditarEstagio /></Layout> : <Navigate to="/login" />}
         />
         <Route
-          path="/registros"
-          element={token ? <Layout><ListarRegistros /></Layout> : <Navigate to="/login" />}
+          path="/estagios/:id"
+          element={token ? <Layout><DetalhesEstagio /></Layout> : <Navigate to="/login" />}
         />
         {/* Redirecionar para login por padrão */}
         <Route path="/" element={<Navigate to="/login" />} />

@@ -69,14 +69,19 @@ export default function Dashboard() {
         };
         setProvincesData(provinciasData);
 
-        // Buscar dados de empresas com mais estagiários
+   
         const empresasResponse = await axios.get('http://localhost:5001/api/dashboard/empresas');
+        const empresasAtivas = empresasResponse.data
+         //.filter(item => item.status === 'Ativo' || item.Status === 'Ativo')
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 3);
+
         const empresasData = {
-          labels: empresasResponse.data.map(item => item.empresa),
+          labels: empresasAtivas.map(item => item.empresa),
           datasets: [
             {
               label: 'Número de Estagiários',
-              data: empresasResponse.data.map(item => item.total),
+              data: empresasAtivas.map(item => item.total),
               backgroundColor: '#3B82F6',
               borderWidth: 0,
             },
@@ -114,7 +119,7 @@ export default function Dashboard() {
       },
       title: {
         display: true,
-        text: 'Estagiários / Província',
+        text: 'Estagiários Ativos por Província',
         font: {
           size: 16,
           weight: 'bold',

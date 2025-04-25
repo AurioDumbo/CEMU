@@ -35,7 +35,7 @@ async function createEstagio(req, res) {
     };
 
     const camposFaltantes = Object.entries(camposObrigatorios)
-        .filter(([campo]) => !req.body[campo])
+        .filter(([campo]) => typeof req.body[campo] === 'undefined' || req.body[campo] === '')
         .map(([_, nome]) => nome);
 
     if (camposFaltantes.length > 0) {

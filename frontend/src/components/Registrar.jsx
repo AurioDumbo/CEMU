@@ -60,7 +60,7 @@ export default function Registrar() {
               onClick={() => setActiveTab('estudante')}
               className={`px-4 py-2 rounded-md transition-colors duration-200 ${
                 activeTab === 'estudante'
-                  ? 'bg-blue-500 text-white shadow-md'
+                  ? 'bg-red-500 text-white shadow-md'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -70,7 +70,7 @@ export default function Registrar() {
               onClick={() => setActiveTab('empresa')}
               className={`px-4 py-2 rounded-md transition-colors duration-200 ${
                 activeTab === 'empresa'
-                  ? 'bg-blue-500 text-white shadow-md'
+                  ? 'bg-red-500 text-white shadow-md'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -80,7 +80,7 @@ export default function Registrar() {
               onClick={() => setActiveTab('estagio')}
               className={`px-4 py-2 rounded-md transition-colors duration-200 ${
                 activeTab === 'estagio'
-                  ? 'bg-blue-500 text-white shadow-md'
+                  ? 'bg-red-500 text-white shadow-md'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >

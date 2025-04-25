@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import EditIcon from '../assets/icons/edit.svg?react';
+import DeleteIcon from '../assets/icons/delete.svg?react';
 
 const ListarRegistros = () => {
   const [activeTab, setActiveTab] = useState('estudantes');
@@ -44,6 +46,8 @@ const ListarRegistros = () => {
           empresas: empresasRes.data.length
         });
 
+        console.log('Dados das empresas:', empresasRes.data);
+
         setEstudantes(estudantesRes.data);
         setEmpresas(empresasRes.data);
         setLoading(false);
@@ -57,32 +61,29 @@ const ListarRegistros = () => {
     fetchData();
   }, [navigate]);
 
-  const fetchEstudantes = async () => {
-    try {
-      const response = await axios.get('http://localhost:5001/api/estudantes');
-      setEstudantes(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar estudantes:', error);
-      toast.error('Erro ao carregar lista de estudantes');
-    }
-  };
-
-  const fetchEmpresas = async () => {
-    try {
-      const response = await axios.get('http://localhost:5001/api/empresas');
-      setEmpresas(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar empresas:', error);
-      toast.error('Erro ao carregar lista de empresas');
-    }
-  };
-
   const handleDeleteEmpresa = async (id) => {
     if (window.confirm('Tem certeza que deseja excluir esta empresa?')) {
         try {
-            await axios.delete(`http://localhost:5001/api/empresas/${id}`);
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            await axios.delete(`http://localhost:5001/api/empresas/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             toast.success('Empresa excluída com sucesso');
-            fetchEmpresas(); // Atualiza a lista após excluir
+            // Atualiza a lista após excluir
+            const [estudantesRes, empresasRes] = await Promise.all([
+                axios.get('http://localhost:5001/api/estudantes', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get('http://localhost:5001/api/empresas', {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
+            setEstudantes(estudantesRes.data);
+            setEmpresas(empresasRes.data);
         } catch (error) {
             console.error('Erro ao excluir empresa:', error);
             toast.error('Erro ao excluir empresa');
@@ -93,20 +94,32 @@ const ListarRegistros = () => {
   const handleDeleteEstudante = async (id) => {
     if (window.confirm('Tem certeza que deseja excluir este estudante?')) {
         try {
-            await axios.delete(`http://localhost:5001/api/estudantes/${id}`);
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            await axios.delete(`http://localhost:5001/api/estudantes/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             toast.success('Estudante excluído com sucesso');
-            fetchEstudantes(); // Atualiza a lista após excluir
+            // Atualiza a lista após excluir
+            const [estudantesRes, empresasRes] = await Promise.all([
+                axios.get('http://localhost:5001/api/estudantes', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get('http://localhost:5001/api/empresas', {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
+            setEstudantes(estudantesRes.data);
+            setEmpresas(empresasRes.data);
         } catch (error) {
             console.error('Erro ao excluir estudante:', error);
             toast.error('Erro ao excluir estudante');
         }
     }
   };
-
-  useEffect(() => {
-    fetchEstudantes();
-    fetchEmpresas();
-  }, []);
 
   const handleSearch = (value) => {
     setSearchTerm(value);
@@ -240,8 +253,8 @@ const ListarRegistros = () => {
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Curso</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Faculdade</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Curso</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -252,8 +265,8 @@ const ListarRegistros = () => {
                     {currentData.map((estudante) => (
                       <tr key={estudante.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{estudante.nome}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{estudante.curso.nome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{estudante.faculdade.nome}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{estudante.curso.nome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{estudante.email}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{estudante.telefone}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -265,16 +278,20 @@ const ListarRegistros = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => navigate(`/register-student/${estudante.id}`)}
-                            className="text-indigo-600 hover:text-indigo-900 mr-4">
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEstudante(estudante.id)}
-                            className="text-red-600 hover:text-red-900">
-                            Excluir
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => navigate(`/estudante/${estudante.id}/edit`)}
+                              className="p-1 text-blue-600 hover:text-blue-800"
+                            >
+                              <EditIcon className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEstudante(estudante.id)}
+                              className="p-1 text-red-600 hover:text-red-800"
+                            >
+                              <DeleteIcon className="w-5 h-5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -312,16 +329,29 @@ const ListarRegistros = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => navigate(`/register-company/${empresa.id}`)}
-                            className="text-indigo-600 hover:text-indigo-900 mr-4">
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEmpresa(empresa.id)}
-                            className="text-red-600 hover:text-red-900">
-                            Excluir
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                const empresaId = empresa?.ID || empresa?.id;
+                                console.log('Dados da empresa:', empresa);
+                                console.log('ID da empresa:', empresaId);
+                                if (!empresaId) {
+                                  toast.error('ID da empresa não encontrado');
+                                  return;
+                                }
+                                navigate(`/empresas/${empresaId}/edit`);
+                              }}
+                              className="p-1 text-blue-600 hover:text-blue-800"
+                            >
+                              <EditIcon className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEmpresa(empresa.id)}
+                              className="p-1 text-red-600 hover:text-red-800"
+                            >
+                              <DeleteIcon className="w-5 h-5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

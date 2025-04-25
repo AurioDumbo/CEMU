@@ -1,3 +1,4 @@
+
 const db = require('../config/db');
 
 // CREATE: Inserir um novo estudante

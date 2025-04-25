@@ -75,9 +75,9 @@ const RegistrarEstudante = ({ onSuccess }) => {
           Faculdade_ID: '',
           Sexo: ''
         });
-        onSuccess();
+        if (onSuccess) onSuccess();
         toast.success('Estudante registrado com sucesso!');
-        navigate('/dashboard');
+
       }
     } catch (error) {
       console.error('Erro ao registrar estudante:', error);
@@ -99,7 +99,7 @@ const RegistrarEstudante = ({ onSuccess }) => {
             value={formData.Nome}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-red-500 sm:text-sm"
           />
         </div>
 
@@ -114,7 +114,7 @@ const RegistrarEstudante = ({ onSuccess }) => {
             value={formData.Sobrenome}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
         </div>
 
@@ -128,7 +128,7 @@ const RegistrarEstudante = ({ onSuccess }) => {
             value={formData.Sexo}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="">Selecione o sexo</option>
             <option value="M">Masculino</option>
@@ -208,16 +208,10 @@ const RegistrarEstudante = ({ onSuccess }) => {
       </div>
 
       <div className="flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancelar
-        </button>
+      
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Salvar
         </button>

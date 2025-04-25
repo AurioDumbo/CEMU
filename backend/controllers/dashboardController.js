@@ -7,8 +7,10 @@ const getEstagiariosPorProvincia = async (req, res) => {
             SELECT 
                 e.Provincia,
                 COUNT(*) as total,
-                ROUND((COUNT(*) * 100.0 / (SELECT COUNT(*) FROM Estagio)), 1) as percentagem
+                ROUND((COUNT(*) * 100.0 / (SELECT COUNT(*) FROM Estagio est INNER JOIN Estudante es ON est.Estudante_ID = es.ID WHERE es.Estado = 'Ativo')), 1) as percentagem
             FROM Estagio e
+            INNER JOIN Estudante est ON e.Estudante_ID = est.ID
+            WHERE est.Estado = 'Ativo'
             GROUP BY e.Provincia
             ORDER BY total DESC
         `);
@@ -28,10 +30,11 @@ const getEmpresasTopEstagios = async (req, res) => {
                 COUNT(est.ID) as total
             FROM Empresa e
             LEFT JOIN Estagio est ON e.ID = est.Empresa_ID
-            WHERE e.Status = 'Ativo'
+            LEFT JOIN Estudante s ON est.Estudante_ID = s.ID
+            WHERE e.Status = 'Ativo' AND s.Estado = 'Ativo'
             GROUP BY e.ID, e.Nome
             ORDER BY total DESC
-            LIMIT 10
+            LIMIT 3
         `);
         
         res.status(200).json(results);

@@ -23,7 +23,7 @@ export default function Sidebar() {
         onClick={() => handleNavigation('/dashboard')}
         className={`w-12 h-12 mb-4 flex items-center justify-center rounded-lg transition-all duration-200 relative
           ${isActive('/dashboard') 
-            ? 'bg-blue-50 text-blue-600 shadow-inner' 
+            ? 'bg-red-50 text-red-600 shadow-inner' 
             : 'hover:bg-gray-100'}`}
         title="Dashboard"
       >
@@ -33,7 +33,7 @@ export default function Sidebar() {
           className={`w-6 h-6 ${isActive('/dashboard') ? 'opacity-100' : 'opacity-60'}`} 
         />
         {isActive('/dashboard') && (
-          <div className="absolute left-0 top-0 h-full w-1 bg-blue-600 rounded-l-lg" />
+          <div className="absolute left-0 top-0 h-full w-1 bg-red-600 rounded-l-lg" />
         )}
       </button>
       
@@ -41,7 +41,7 @@ export default function Sidebar() {
         onClick={() => handleNavigation('/register')}
         className={`w-12 h-12 mb-4 flex items-center justify-center rounded-lg transition-all duration-200 relative
           ${isActive('/register') 
-            ? 'bg-blue-50 text-blue-600 shadow-inner' 
+            ? 'bg-red-50 text-red-600 shadow-inner' 
             : 'hover:bg-gray-100'}`}
         title="Registrar"
       >
@@ -51,7 +51,7 @@ export default function Sidebar() {
           className={`w-6 h-6 ${isActive('/register') ? 'opacity-100' : 'opacity-60'}`} 
         />
         {isActive('/register') && (
-          <div className="absolute left-0 top-0 h-full w-1 bg-blue-600 rounded-l-lg" />
+          <div className="absolute left-0 top-0 h-full w-1 bg-red-600 rounded-l-lg" />
         )}
       </button>
       
@@ -59,7 +59,7 @@ export default function Sidebar() {
         onClick={() => handleNavigation('/estagios')}
         className={`w-12 h-12 mb-4 flex items-center justify-center rounded-lg transition-all duration-200 relative
           ${isActive('/estagios') 
-            ? 'bg-blue-50 text-blue-600 shadow-inner' 
+            ? 'bg-red-50 text-red-600 shadow-inner' 
             : 'hover:bg-gray-100'}`}
         title="Estágios"
       >
@@ -69,7 +69,7 @@ export default function Sidebar() {
           className={`w-6 h-6 ${isActive('/estagios') ? 'opacity-100' : 'opacity-60'}`} 
         />
         {isActive('/estagios') && (
-          <div className="absolute left-0 top-0 h-full w-1 bg-blue-600 rounded-l-lg" />
+          <div className="absolute left-0 top-0 h-full w-1 bg-red-600 rounded-l-lg" />
         )}
       </button>
 
@@ -77,7 +77,7 @@ export default function Sidebar() {
         onClick={() => handleNavigation('/registros')}
         className={`w-12 h-12 mb-4 flex items-center justify-center rounded-lg transition-all duration-200 relative
           ${isActive('/registros') 
-            ? 'bg-blue-50 text-blue-600 shadow-inner' 
+            ? 'bg-red-50 text-red-600 shadow-inner' 
             : 'hover:bg-gray-100'}`}
         title="Relatórios"
       >
@@ -87,7 +87,7 @@ export default function Sidebar() {
           className={`w-6 h-6 ${isActive('/registros') ? 'opacity-100' : 'opacity-60'}`} 
         />
         {isActive('/registros') && (
-          <div className="absolute left-0 top-0 h-full w-1 bg-blue-600 rounded-l-lg" />
+          <div className="absolute left-0 top-0 h-full w-1 bg-red-600 rounded-l-lg" />
         )}
       </button>
     </div>

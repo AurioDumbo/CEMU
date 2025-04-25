@@ -1,10 +1,10 @@
 const db = require('../config/db');
 
-// CREATE: Inserir uma nova empresa
+
 async function createEmpresa(req, res) {
     const { NIF, Nome, Provincia, Telefone, Email, Status = 'Pendente' } = req.body;
 
-    // Validações
+
     if (!NIF || !Nome || !Provincia) {
         return res.status(400).json({ error: 'Os campos NIF, Nome e Provincia são obrigatórios!' });
     }
@@ -18,7 +18,7 @@ async function createEmpresa(req, res) {
     }
 }
 
-// READ: Listar todas as empresas
+
 async function getAllEmpresas(req, res) {
     try {
         const [rows] = await db.execute(`
@@ -39,10 +39,21 @@ async function getAllEmpresas(req, res) {
     }
 }
 
-// READ: Obter uma empresa por ID
+
 async function getEmpresaById(req, res) {
     try {
-        const [rows] = await db.execute('SELECT * FROM Empresa WHERE ID = ?', [req.params.id]);
+        const [rows] = await db.execute(`
+            SELECT 
+                ID,
+                NIF,
+                Nome,
+                Provincia,
+                Telefone,
+                Email,
+                Status
+            FROM Empresa 
+            WHERE ID = ?
+        `, [req.params.id]);
         if (rows.length === 0) {
             return res.status(404).json({ message: 'Empresa não encontrada' });
         }
@@ -52,11 +63,11 @@ async function getEmpresaById(req, res) {
     }
 }
 
-// UPDATE: Atualizar uma empresa
+
 async function updateEmpresa(req, res) {
     const { NIF, Nome, Provincia, Telefone, Email, Status } = req.body;
 
-    // Validações
+ 
     if (!NIF || !Nome || !Provincia || !Telefone || !Email || !Status) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
     }

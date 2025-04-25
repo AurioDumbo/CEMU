@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-export default function RegistrarEstagio() {
-  const navigate = useNavigate();
+export default function RegistrarEstagio({ onSuccess }) {
   const [estudantes, setEstudantes] = useState([]);
   const [empresas, setEmpresas] = useState([]);
   const [errors, setErrors] = useState({});
@@ -31,29 +29,29 @@ export default function RegistrarEstagio() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [estRes, empRes, provRes] = await Promise.all([
+        const [estRes, empRes, provRes, estagiosRes] = await Promise.all([
           axios.get('http://localhost:5001/api/estudantes'),
           axios.get('http://localhost:5001/api/empresas'),
-          axios.get('https://angolaprovinciasapi.ggwp.com.br/api/v1/provincias')
+          axios.get('https://angolaprovinciasapi.ggwp.com.br/api/v1/provincias'),
+          axios.get('http://localhost:5001/api/estagios')
         ]);
         
         // Log para debug
-        console.log('Dados dos estudantes:', estRes.data);
         console.log('Dados das empresas:', empRes.data);
         
-        if (Array.isArray(estRes.data)) {
-          setEstudantes(estRes.data);
-        } else {
-          console.error('Dados de estudantes não é um array:', estRes.data);
-          setEstudantes([]);
-        }
+        // Filtra estudantes que não têm estágios ativos
+        const estudantesComEstagio = new Set(estagiosRes.data.map(estagio => estagio.Estudante_ID));
+        const estudantesDisponiveis = estRes.data.filter(estudante => !estudantesComEstagio.has(estudante.id));
         
-        if (Array.isArray(empRes.data)) {
-          setEmpresas(empRes.data);
-        } else {
-          console.error('Dados de empresas não é um array:', empRes.data);
-          setEmpresas([]);
-        }
+        setEstudantes(estudantesDisponiveis);
+        
+        // Filtra apenas empresas ativas
+        const empresasAtivas = empRes.data.filter(empresa => {
+          console.log('Status da empresa:', empresa.Status);
+          return empresa.Status === 'Ativo' || empresa.status === 'Ativo';
+        });
+        console.log('Empresas ativas:', empresasAtivas);
+        setEmpresas(empresasAtivas);
         
         setProvincias(Array.isArray(provRes.data) ? provRes.data : provRes.data.data || []);
       } catch (err) {
@@ -149,8 +147,8 @@ export default function RegistrarEstagio() {
       Remunerado: parseInt(formData.Remunerado),
       Responsavel_Nome: formData.Responsavel_Nome || null,
       Responsavel_Telefone: formData.Responsavel_Telefone || null,
-      Inicio: formData.Data_Inicio,
-      Termino: formData.Data_Fim
+      Inicio: formData.Data_Inicio,  
+      Termino: formData.Data_Fim      
     };
 
     // Log para debug
@@ -162,13 +160,25 @@ export default function RegistrarEstagio() {
 
     try {
       await axios.post('http://localhost:5001/api/estagios', payload);
-      toast.success('Estágio registrado com sucesso!');
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Erro ao registrar estágio:', err.response?.data || err.message);
-      const msg = err.response?.data?.error ||
-        'Por favor, verifique se todos os campos obrigatórios foram preenchidos corretamente.';
-      toast.error(msg);
+      setFormData({
+        Estudante_ID: '',
+        Empresa_ID: '',
+        Provincia: '',
+        Municipio: '',
+        Rua: '',
+        Tipo: '',
+        Modalidade: '',
+        Remunerado: '',
+        Responsavel_Nome: '',
+        Responsavel_Telefone: '',
+        Data_Inicio: '',
+        Data_Fim: '',
+        Status: 'Pendente',
+        Observacoes: ''
+      });
+      if (onSuccess) onSuccess(); // Chama o modal de sucesso do pai
+    } catch {
+      // ...tratamento de erro...
     }
   };
 
@@ -185,7 +195,7 @@ export default function RegistrarEstagio() {
             value={formData.Estudante_ID}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="">Selecione o estudante</option>
             {estudantes && estudantes.map((estudante, index) => (
@@ -207,7 +217,7 @@ export default function RegistrarEstagio() {
             value={formData.Empresa_ID}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="">Selecione a empresa</option>
             {empresas && empresas.map((empresa, index) => (
@@ -229,7 +239,7 @@ export default function RegistrarEstagio() {
             value={formData.Provincia}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="">Selecione a província</option>
             {provincias.map((provincia) => (
@@ -252,7 +262,7 @@ export default function RegistrarEstagio() {
             onChange={handleChange}
             required
             disabled={!formData.Provincia}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="">Selecione o município</option>
             {municipios.map((municipio) => (
@@ -275,7 +285,7 @@ export default function RegistrarEstagio() {
             value={formData.Rua}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
           {errors.Rua && <p className="mt-1 text-sm text-red-600">{errors.Rua}</p>}
         </div>
@@ -290,7 +300,7 @@ export default function RegistrarEstagio() {
             value={formData.Tipo}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="">Selecione o tipo</option>
             <option value="1">Acadêmico</option>
@@ -309,7 +319,7 @@ export default function RegistrarEstagio() {
             value={formData.Modalidade}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="">Selecione a modalidade</option>
             <option value="0">Atribuído</option>
@@ -328,7 +338,7 @@ export default function RegistrarEstagio() {
             value={formData.Remunerado}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           >
             <option value="">Selecione</option>
             <option value="1">Sim</option>
@@ -347,7 +357,7 @@ export default function RegistrarEstagio() {
             name="Responsavel_Nome"
             value={formData.Responsavel_Nome}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
         </div>
 
@@ -361,7 +371,7 @@ export default function RegistrarEstagio() {
             name="Responsavel_Telefone"
             value={formData.Responsavel_Telefone}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
         </div>
 
@@ -376,7 +386,7 @@ export default function RegistrarEstagio() {
             value={formData.Data_Inicio}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
           {errors.Data_Inicio && <p className="mt-1 text-sm text-red-600">{errors.Data_Inicio}</p>}
         </div>
@@ -392,7 +402,7 @@ export default function RegistrarEstagio() {
             value={formData.Data_Fim}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
           {errors.Data_Fim && <p className="mt-1 text-sm text-red-600">{errors.Data_Fim}</p>}
         </div>
@@ -403,20 +413,14 @@ export default function RegistrarEstagio() {
       </div>
 
       <div className="flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancelar
-        </button>
+       
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Salvar
         </button>
       </div>
     </form>
   );
-} 
+}
