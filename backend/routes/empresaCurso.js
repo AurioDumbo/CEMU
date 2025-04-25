@@ -1,12 +1,19 @@
 const express = require('express');
+const {
+  createEmpresaCurso,
+  getAllEmpresaCurso,
+  getEmpresaCursoById,
+  updateEmpresaCurso,
+  deleteEmpresaCurso,
+} = require('../controllers/empresaCursoController');
+
 const router = express.Router();
-const empresaCursoController = require('../controllers/empresaCursoController');
 
 // Rotas
-router.post('/', empresaCursoController.createEmpresaCurso);
-router.get('/', empresaCursoController.getAllEmpresaCurso);
-router.get('/:empresaId/:curso', empresaCursoController.getEmpresaCursoById);
-router.put('/:empresaId/:curso', empresaCursoController.updateEmpresaCurso);
-router.delete('/:empresaId/:curso', empresaCursoController.deleteEmpresaCurso);
+router.post('/', createEmpresaCurso);
+router.get('/', getAllEmpresaCurso);
+router.get('/:empresaId/:curso', getEmpresaCursoById);
+router.put('/:empresaId/:curso', updateEmpresaCurso);
+router.delete('/:empresaId/:curso', deleteEmpresaCurso);
 
 module.exports = router;

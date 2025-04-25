@@ -1,25 +1,26 @@
 const db = require('../config/db');
 
-// CREATE: Inserir uma nova relação Empresa_Curso
-exports.createEmpresaCurso = async (req, res) => {
-    const { Empresa_ID, Curso_ID } = req.body;
+const createEmpresaCurso = async (req, res) => {
+    const { empresa_id, cursos } = req.body;
 
-    // Validações
-    if (!Empresa_ID || !Curso_ID) {
-        return res.status(400).json({ error: 'Os campos Empresa_ID e Curso_ID são obrigatórios!' });
+    if (!empresa_id || !cursos || !Array.isArray(cursos)) {
+        return res.status(400).json({ error: 'Os campos empresa_id e cursos são obrigatórios!' });
     }
 
     try {
-        const sql = 'INSERT INTO Empresa_Curso (Empresa_ID, Curso_ID) VALUES (?, ?)';
-        const [result] = await db.execute(sql, [Empresa_ID, Curso_ID]);
-        res.status(201).json({ message: 'Relação Empresa_Curso criada com sucesso!', id: result.insertId });
+        // Inserir cada curso individualmente
+        for (const curso_id of cursos) {
+            const sql = 'INSERT INTO Empresa_Curso (Empresa_ID, Curso_ID) VALUES (?, ?)';
+            await db.execute(sql, [empresa_id, curso_id]);
+        }
+        
+        res.status(201).json({ message: 'Relações Empresa_Curso criadas com sucesso!' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// READ: Listar todas as relações Empresa_Curso
-exports.getAllEmpresaCurso = async (req, res) => {
+const getAllEmpresaCurso = async (req, res) => {
     try {
         const [rows] = await db.execute(`
             SELECT Empresa_Curso.*, Empresa.Nome AS EmpresaNome, Curso.Nome AS CursoNome
@@ -33,8 +34,7 @@ exports.getAllEmpresaCurso = async (req, res) => {
     }
 };
 
-
-exports.getEmpresaCursoById = async (req, res) => {
+const getEmpresaCursoById = async (req, res) => {
     const { empresaId, cursoId } = req.params;
 
     try {
@@ -57,12 +57,10 @@ exports.getEmpresaCursoById = async (req, res) => {
     }
 };
 
-
-exports.updateEmpresaCurso = async (req, res) => {
+const updateEmpresaCurso = async (req, res) => {
     const { empresaId, cursoId } = req.params;
     const { NovoCurso_ID } = req.body;
 
-    
     if (!NovoCurso_ID) {
         return res.status(400).json({ error: 'O campo NovoCurso_ID é obrigatório!' });
     }
@@ -81,8 +79,7 @@ exports.updateEmpresaCurso = async (req, res) => {
     }
 };
 
-
-exports.deleteEmpresaCurso = async (req, res) => {
+const deleteEmpresaCurso = async (req, res) => {
     const { empresaId, cursoId } = req.params;
 
     try {
@@ -97,4 +94,12 @@ exports.deleteEmpresaCurso = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+};
+
+module.exports = {
+    createEmpresaCurso,
+    getAllEmpresaCurso,
+    getEmpresaCursoById,
+    updateEmpresaCurso,
+    deleteEmpresaCurso,
 };

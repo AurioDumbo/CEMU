@@ -1,16 +1,23 @@
-// backend/server.js
 const express = require('express');
 const cors = require('cors');
-const db = require('./config/db'); // Corrigido o caminho para o arquivo db.js
-const sequelize = require('./config/database'); // Corrigido o caminho para o arquivo database.js
 const dotenv = require('dotenv');
+const db = require('./config/db');
+const sequelize = require('./config/database');
+const { Estudante, updateEstudanteEstado } = require('./models/estudante');
+const cron = require('node-cron');
 
-const empresaCursoRoutes = require('./routes/empresaCurso'); // Corrigido o caminho
-const estudantesRoutes = require('./routes/estudantes'); // Corrigido o caminho
-const empresasRoutes = require('./routes/empresas'); // Corrigido o caminho
-const estagiosRoutes = require('./routes/estagios'); // Corrigido o caminho
-const feedbackEstagioRoutes = require('./routes/feedbackEstagio'); // Corrigido o caminho
-const userRoutes = require('./routes/userRoutes'); // Corrigido o caminho
+const empresaCursoRoutes = require('./routes/empresaCurso');
+const estudantesRoutes = require('./routes/estudantes');
+const empresasRoutes = require('./routes/empresas');
+const estagiosRoutes = require('./routes/estagios');
+const feedbackEstagioRoutes = require('./routes/feedbackEstagio');
+const userRoutes = require('./routes/userRoutes');
+const cursoRoutes = require('./routes/curso');
+const faculdadeRoutes = require('./routes/faculdade');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const provinciasRoutes = require("./routes/provincias.routes");
+const authRoutes = require('./routes/authRoutes');
+
 
 dotenv.config();
 
@@ -18,7 +25,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conecta ao banco de dados e sincroniza os modelos
 sequelize.sync()
     .then(() => console.log('Banco de dados sincronizado'))
     .catch((err) => console.error('Erro ao sincronizar o banco de dados:', err));
@@ -33,21 +39,33 @@ sequelize.sync()
     }
 })();
 
+// Agendar atualização diária do estado dos estudantes
+cron.schedule('0 0 * * *', async () => {
+  try {
+    await updateEstudanteEstado();
+  } catch (error) {
+    console.error('Erro ao executar atualização agendada dos estados:', error);
+  }
+});
+
 // Rotas
+app.use('/api/auth', authRoutes);
 app.use('/api/estudantes', estudantesRoutes);
 app.use('/api/empresas', empresasRoutes);
 app.use('/api/empresa_curso', empresaCursoRoutes);
 app.use('/api/estagios', estagiosRoutes);
 app.use('/api/feedback', feedbackEstagioRoutes);
 app.use('/api/usuarios', userRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/faculdade', faculdadeRoutes);
+app.use('/api/curso', cursoRoutes);
+app.use('/api/provincias', provinciasRoutes);
 
-// Rota de teste
-app.get('/', (req, res) => {
-    res.send('API rodando!');
-});
+app.get('/api/mensagem',(req, res) => {
+    res.json({mensagem: 'Backend rodando'})
+})
 
-// Iniciar o servidor
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });

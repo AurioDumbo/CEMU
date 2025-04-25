@@ -1,7 +1,6 @@
 const db = require('../config/db');
 
-// CREATE: Inserir um novo curso
-exports.createCurso = async (req, res) => {
+const createCurso = async (req, res) => {
     const { Nome, Faculdade_ID } = req.body;
     if (!Nome || !Faculdade_ID) {
         return res.status(400).json({ error: 'Os campos Nome e Faculdade_ID são obrigatórios!' });
@@ -15,37 +14,40 @@ exports.createCurso = async (req, res) => {
     }
 };
 
-// CREATE: Inserir um novo estudante
-exports.createEstudante = async (req, res) => {
-    const { Nome, Sobrenome, Curso, Telefone, Email, Faculdade_ID } = req.body;
-    if (!Nome || !Sobrenome || !Curso) {
-        return res.status(400).json({ error: 'Os campos Nome, Sobrenome e Curso são obrigatórios!' });
-    }
+const getAllCursos = async (req, res) => {
     try {
-        const sql = 'INSERT INTO Estudante (Nome, Sobrenome, Curso, Telefone, Email, Faculdade_ID) VALUES (?, ?, ?, ?, ?, ?)';
-        const [result] = await db.execute(sql, [Nome, Sobrenome, Curso, Telefone, Email, Faculdade_ID]);
-        res.status(201).json({ message: 'Estudante criado com sucesso!', id: result.insertId });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-// READ: Listar todos os cursos
-exports.getAllCursos = async (req, res) => {
-    try {
-        const [rows] = await db.execute('SELECT * FROM Curso');
+        const sql = `
+            SELECT 
+                c.ID as curso_id,
+                c.Nome as curso_nome,
+                f.ID as faculdade_id,
+                f.Nome as faculdade_nome
+            FROM Curso c
+            LEFT JOIN Faculdade f ON c.Faculdade_ID = f.ID
+            ORDER BY c.Nome
+        `;
+        const [rows] = await db.execute(sql);
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// READ: Obter um curso por ID
-exports.getCursoById = async (req, res) => {
+const getCursoById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const [rows] = await db.execute('SELECT * FROM Curso WHERE ID = ?', [id]);
+        const sql = `
+            SELECT 
+                c.ID as curso_id,
+                c.Nome as curso_nome,
+                f.ID as faculdade_id,
+                f.Nome as faculdade_nome
+            FROM Curso c
+            LEFT JOIN Faculdade f ON c.Faculdade_ID = f.ID
+            WHERE c.ID = ?
+        `;
+        const [rows] = await db.execute(sql, [id]);
         if (rows.length === 0) {
             return res.status(404).json({ message: 'Curso não encontrado!' });
         }
@@ -55,8 +57,7 @@ exports.getCursoById = async (req, res) => {
     }
 };
 
-// UPDATE: Atualizar um curso
-exports.updateCurso = async (req, res) => {
+const updateCurso = async (req, res) => {
     const { id } = req.params;
     const { Nome, Faculdade_ID } = req.body;
 
@@ -78,8 +79,7 @@ exports.updateCurso = async (req, res) => {
     }
 };
 
-// DELETE: Remover um curso
-exports.deleteCurso = async (req, res) => {
+const deleteCurso = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -94,4 +94,12 @@ exports.deleteCurso = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+};
+
+module.exports = {
+    createCurso,
+    getAllCursos,
+    getCursoById,
+    updateCurso,
+    deleteCurso,
 };
