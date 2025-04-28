@@ -15,6 +15,11 @@ const ListarRegistros = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filtroFaculdade, setFiltroFaculdade] = useState('');
+  const [filtroCurso, setFiltroCurso] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('');
+  const [filtroEmpresaEstado, setFiltroEmpresaEstado] = useState('');
+  const [filtroEmpresaProvincia, setFiltroEmpresaProvincia] = useState('');
   const itemsPerPage = 8;
   const navigate = useNavigate();
 
@@ -73,7 +78,6 @@ const ListarRegistros = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Empresa excluída com sucesso');
-            // Atualiza a lista após excluir
             const [estudantesRes, empresasRes] = await Promise.all([
                 axios.get('http://localhost:5001/api/estudantes', {
                     headers: { Authorization: `Bearer ${token}` }
@@ -103,7 +107,7 @@ const ListarRegistros = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Estudante excluído com sucesso');
-            // Atualiza a lista após excluir
+        
             const [estudantesRes, empresasRes] = await Promise.all([
                 axios.get('http://localhost:5001/api/estudantes', {
                     headers: { Authorization: `Bearer ${token}` }
@@ -130,10 +134,22 @@ const ListarRegistros = () => {
             empresa.nif.toLowerCase().includes(value.toLowerCase()) ||
             empresa.email.toLowerCase().includes(value.toLowerCase())
           )
-        : estudantes.filter(estudante => 
-            estudante.nome.toLowerCase().includes(value.toLowerCase()) ||
-            estudante.email.toLowerCase().includes(value.toLowerCase())
-          );
+        : estudantes.filter(estudante => {
+            const matchesSearch = 
+              estudante.nome.toLowerCase().includes(value.toLowerCase()) ||
+              estudante.email.toLowerCase().includes(value.toLowerCase());
+            
+            const matchesFaculdade = !filtroFaculdade || 
+              estudante.faculdade.nome.toLowerCase() === filtroFaculdade.toLowerCase();
+            
+            const matchesCurso = !filtroCurso || 
+              estudante.curso.nome.toLowerCase() === filtroCurso.toLowerCase();
+            
+            const matchesEstado = !filtroEstado || 
+              estudante.status.toLowerCase() === filtroEstado.toLowerCase();
+            
+            return matchesSearch && matchesFaculdade && matchesCurso && matchesEstado;
+          });
       setSuggestions(filtered);
       setShowSuggestions(true);
     } else {
@@ -143,17 +159,35 @@ const ListarRegistros = () => {
   };
 
   const filteredData = activeTab === 'empresas' 
-    ? empresas.filter(empresa => 
-        empresa.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        empresa.nif.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        empresa.email.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : estudantes.filter(estudante => 
-        estudante.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        estudante.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    ? empresas.filter(empresa => {
+        const matchesSearch =
+          empresa.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          empresa.nif.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          empresa.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesProvincia = !filtroEmpresaProvincia ||
+          (empresa.provincia || empresa.Provincia || '').toLowerCase() === filtroEmpresaProvincia.toLowerCase();
+        const matchesEstado = !filtroEmpresaEstado ||
+          (empresa.status || empresa.Status || '').toLowerCase() === filtroEmpresaEstado.toLowerCase();
+        return matchesSearch && matchesProvincia && matchesEstado;
+      })
+    : estudantes.filter(estudante => {
+        const matchesSearch = 
+          estudante.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          estudante.email.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesFaculdade = !filtroFaculdade || 
+          estudante.faculdade.nome.toLowerCase() === filtroFaculdade.toLowerCase();
+        
+        const matchesCurso = !filtroCurso || 
+          estudante.curso.nome.toLowerCase() === filtroCurso.toLowerCase();
+        
+        const matchesEstado = !filtroEstado || 
+          estudante.status.toLowerCase() === filtroEstado.toLowerCase();
+        
+        return matchesSearch && matchesFaculdade && matchesCurso && matchesEstado;
+      });
 
-  // Calcular paginação
+
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -161,6 +195,90 @@ const ListarRegistros = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const exportarCSV = () => {
+    const dados = activeTab === 'empresas' ? filteredData : filteredData;
+    
+    if (activeTab === 'empresas') {
+
+      const empresaHeaders = [
+        'ID',
+        'Nome',
+        'NIF',
+        'Província',
+        'Email',
+        'Telefone',
+        'Status'
+      ];
+
+
+      const empresaCsvContent = [
+        empresaHeaders.join(';'),
+        ...dados.map(item => [
+          item.id || item.ID || '',
+          item.nome || item.Nome || '',
+          item.nif || item.NIF || '',
+          item.provincia || item.Provincia || '',
+          item.email || item.Email || '',
+          item.telefone || item.Telefone || '',
+          item.status || item.Status || ''
+        ].join(';'))
+      ].join('\n');
+
+      const empresaBlob = new Blob(['\ufeff' + empresaCsvContent], { type: 'text/csv;charset=utf-8;' });
+      const empresaLink = document.createElement('a');
+      const empresaUrl = URL.createObjectURL(empresaBlob);
+      empresaLink.setAttribute('href', empresaUrl);
+      empresaLink.setAttribute('download', `empresas_filtradas_${new Date().toISOString().split('T')[0]}.csv`);
+      empresaLink.style.visibility = 'hidden';
+      document.body.appendChild(empresaLink);
+      empresaLink.click();
+      document.body.removeChild(empresaLink);
+    } else {
+
+      const estudanteHeaders = [
+        'ID',
+        'Nome',
+        'Sobrenome',
+        'Faculdade',
+        'Curso',
+        'Email',
+        'Telefone',
+        'Status'
+      ];
+
+  
+      const estudanteCsvContent = [
+        estudanteHeaders.join(';'),
+        ...dados.map(item => {
+          const nomeCompleto = item.nome || `${item.Nome || ''} ${item.Sobrenome || ''}`;
+          const [nome, ...sobrenomeArr] = nomeCompleto.split(' ');
+          const sobrenome = sobrenomeArr.join(' ');
+
+          return [
+            item.id || item.ID || '',
+            nome || '',
+            sobrenome || '',
+            item.faculdade?.nome || item.faculdade_nome || '',
+            item.curso?.nome || item.curso_nome || '',
+            item.email || item.Email || '',
+            item.telefone || item.Telefone || '',
+            item.status || item.Estado || ''
+          ].join(';');
+        })
+      ].join('\n');
+
+      const estudanteBlob = new Blob(['\ufeff' + estudanteCsvContent], { type: 'text/csv;charset=utf-8;' });
+      const estudanteLink = document.createElement('a');
+      const estudanteUrl = URL.createObjectURL(estudanteBlob);
+      estudanteLink.setAttribute('href', estudanteUrl);
+      estudanteLink.setAttribute('download', `estudantes_filtrados_${new Date().toISOString().split('T')[0]}.csv`);
+      estudanteLink.style.visibility = 'hidden';
+      document.body.appendChild(estudanteLink);
+      estudanteLink.click();
+      document.body.removeChild(estudanteLink);
+    }
   };
 
   if (loading) {
@@ -184,17 +302,6 @@ const ListarRegistros = () => {
       <div className="max-w-full mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="text-gray-600 hover:text-gray-800 transition-colors duration-200"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </button>
-            <h1 className="text-2xl font-bold text-gray-800">Relatórios</h1>
-          </div>
-          <div className="flex space-x-4">
             <div className="relative">
               <input
                 type="text"
@@ -222,11 +329,73 @@ const ListarRegistros = () => {
                 </div>
               )}
             </div>
+            {activeTab === 'estudantes' && (
+              <>
+                <select
+                  value={filtroFaculdade}
+                  onChange={(e) => setFiltroFaculdade(e.target.value)}
+                  className="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Faculdades</option>
+                  {[...new Set(estudantes.map(e => e.faculdade.nome))].map(faculdade => (
+                    <option key={faculdade} value={faculdade}>{faculdade}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filtroCurso}
+                  onChange={(e) => setFiltroCurso(e.target.value)}
+                  className="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Cursos</option>
+                  {[...new Set(estudantes.map(e => e.curso.nome))].map(curso => (
+                    <option key={curso} value={curso}>{curso}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filtroEstado}
+                  onChange={(e) => setFiltroEstado(e.target.value)}
+                  className="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Estado</option>
+                  <option value="Ativo">Ativo</option>
+                  <option value="Pendente">Pendente</option>
+                  <option value="Inativo">Inativo</option>
+                </select>
+              </>
+            )}
+            {activeTab === 'empresas' && (
+              <>
+                <select
+                  value={filtroEmpresaProvincia}
+                  onChange={(e) => setFiltroEmpresaProvincia(e.target.value)}
+                  className="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Província</option>
+                  {[...new Set(empresas.map(e => e.provincia || e.Provincia || ''))].filter(Boolean).map(provincia => (
+                    <option key={provincia} value={provincia}>{provincia}</option>
+                  ))}
+                </select>
+                <select
+                  value={filtroEmpresaEstado}
+                  onChange={(e) => setFiltroEmpresaEstado(e.target.value)}
+                  className="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Estado</option>
+                  <option value="Ativo">Ativo</option>
+                  <option value="Pendente">Pendente</option>
+                  <option value="Inativo">Inativo</option>
+                </select>
+              </>
+            )}
+          </div>
+          <div className="flex space-x-4">
             <button
               onClick={() => setActiveTab('estudantes')}
               className={`px-4 py-2 rounded-md transition-colors duration-200 ${
                 activeTab === 'estudantes'
-                  ? 'bg-blue-500 text-white shadow-md'
+                  ? 'bg-red-500 text-white shadow-md'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -236,11 +405,20 @@ const ListarRegistros = () => {
               onClick={() => setActiveTab('empresas')}
               className={`px-4 py-2 rounded-md transition-colors duration-200 ${
                 activeTab === 'empresas'
-                  ? 'bg-blue-500 text-white shadow-md'
+                  ? 'bg-red-500 text-white shadow-md'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
               Empresas
+            </button>
+            <button
+              onClick={exportarCSV}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+              Exportar CSV
             </button>
           </div>
         </div>

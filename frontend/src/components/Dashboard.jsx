@@ -72,7 +72,7 @@ export default function Dashboard() {
    
         const empresasResponse = await axios.get('http://localhost:5001/api/dashboard/empresas');
         const empresasAtivas = empresasResponse.data
-         //.filter(item => item.status === 'Ativo' || item.Status === 'Ativo')
+       
           .sort((a, b) => b.total - a.total)
           .slice(0, 3);
 
