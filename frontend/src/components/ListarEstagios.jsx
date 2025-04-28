@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import filtroIcon from '../assets/icons/filtro.svg';
-import globoIcon from '../assets/icons/globo.svg';
-import calendarIcon from '../assets/icons/Calendar.svg';
 import EditIcon from '../assets/icons/edit.svg?react';
 import DeleteIcon from '../assets/icons/delete.svg?react';
 
@@ -11,9 +8,10 @@ export default function ListarEstagios() {
   const navigate = useNavigate();
   const [estagios, setEstagios] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [loading, setLoading] = useState(true);;
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filtroProvincia, setFiltroProvincia] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('');
   const itemsPerPage = 8;
 
   useEffect(() => {
@@ -38,10 +36,10 @@ export default function ListarEstagios() {
     }
   };
 
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
+    // Formato compatível com Excel em português
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   const getTipoEstagio = (tipo) => {
@@ -58,13 +56,63 @@ export default function ListarEstagios() {
 
   const filteredEstagios = estagios.filter(estagio => {
     const searchTermLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = 
       estagio.estudante_nome?.toLowerCase().includes(searchTermLower) ||
       estagio.empresa_nome?.toLowerCase().includes(searchTermLower) ||
       estagio.Provincia?.toLowerCase().includes(searchTermLower) ||
-      estagio.Municipio?.toLowerCase().includes(searchTermLower)
-    );
+      estagio.Municipio?.toLowerCase().includes(searchTermLower);
+    
+    const matchesProvincia = !filtroProvincia || 
+      estagio.Provincia?.toLowerCase() === filtroProvincia.toLowerCase();
+    
+    const matchesEstado = !filtroEstado || 
+      estagio.estudante_estado?.toLowerCase() === filtroEstado.toLowerCase();
+    
+    return matchesSearch && matchesProvincia && matchesEstado;
   });
+
+  const exportarCSV = () => {
+    const headers = [
+      'ID',
+      'Estudante',
+      'Empresa',
+      'Província',
+      'Município',
+      'Tipo',
+      'Modalidade',
+      'Remunerado',
+      'Início',
+      'Término',
+      'Estado'
+    ];
+
+    const csvContent = [
+      headers.join(';'),
+      ...filteredEstagios.map(estagio => [
+        estagio.ID || '',
+        estagio.estudante_nome || '',
+        estagio.empresa_nome || '',
+        estagio.Provincia || '',
+        estagio.Municipio || '',
+        getTipoEstagio(estagio.Tipo),
+        getModalidade(estagio.Modalidade),
+        getRemunerado(estagio.Remunerado),
+        formatDate(estagio.Inicio),
+        formatDate(estagio.Termino),
+        estagio.estudante_estado || ''
+      ].join(';'))
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `estagios_filtrados_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Calcular paginação
   const totalPages = Math.ceil(filteredEstagios.length / itemsPerPage);
@@ -97,17 +145,6 @@ export default function ListarEstagios() {
       <div className="max-w-full mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="text-gray-600 hover:text-gray-800 transition-colors duration-200"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </button>
-            <h1 className="text-2xl font-bold text-gray-800">Estágios</h1>
-          </div>
-          <div className="flex space-x-4">
             <div className="relative">
               <input
                 type="text"
@@ -117,54 +154,39 @@ export default function ListarEstagios() {
                 className="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+            <select
+              value={filtroProvincia}
+              onChange={(e) => setFiltroProvincia(e.target.value)}
+              className="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <img src={filtroIcon} alt="Filtrar" className="w-4 h-4" />
-              Filtrar
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-              <img src={globoIcon} alt="Exportar" className="w-4 h-4" />
-              Exportar
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-              <img src={calendarIcon} alt="Calendário" className="w-4 h-4" />
-              Calendário
+              <option value="">Província</option>
+              {[...new Set(estagios.map(e => e.Provincia))].map(provincia => (
+                <option key={provincia} value={provincia}>{provincia}</option>
+              ))}
+            </select>
+            <select
+              value={filtroEstado}
+              onChange={(e) => setFiltroEstado(e.target.value)}
+              className="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Estado</option>
+              <option value="Ativo">Ativo</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Inativo">Inativo</option>
+            </select>
+          </div>
+          <div className="flex space-x-4">
+            <button
+              onClick={exportarCSV}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+              Exportar CSV
             </button>
           </div>
         </div>
-
-        {showFilters && (
-          <div className="mb-6 p-4 bg-white rounded-lg shadow">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                <select className="w-full border border-gray-300 rounded-md p-2">
-                  <option value="">Todos</option>
-                  <option value="1">Acadêmico</option>
-                  <option value="0">Voluntário</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Modalidade</label>
-                <select className="w-full border border-gray-300 rounded-md p-2">
-                  <option value="">Todas</option>
-                  <option value="0">Atribuído</option>
-                  <option value="1">Adquirido</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Remunerado</label>
-                <select className="w-full border border-gray-300 rounded-md p-2">
-                  <option value="">Todos</option>
-                  <option value="1">Sim</option>
-                  <option value="0">Não</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {loading ? (
