@@ -8,5 +8,6 @@ router.get('/', empresasController.getAllEmpresas);
 router.get('/:id', empresasController.getEmpresaById);
 router.put('/:id', empresasController.updateEmpresa);
 router.delete('/:id', empresasController.deleteEmpresa);
+router.get('/por-curso/:cursoId', empresasController.getEmpresasPorCurso);
 
 module.exports = router;

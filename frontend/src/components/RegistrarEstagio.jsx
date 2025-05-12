@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import Select from 'react-select';
 
 export default function RegistrarEstagio({ onSuccess }) {
   const [estudantes, setEstudantes] = useState([]);
@@ -29,30 +30,15 @@ export default function RegistrarEstagio({ onSuccess }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [estRes, empRes, provRes, estagiosRes] = await Promise.all([
+        const [estRes, provRes, estagiosRes] = await Promise.all([
           axios.get('http://localhost:5001/api/estudantes'),
-          axios.get('http://localhost:5001/api/empresas'),
           axios.get('https://angolaprovinciasapi.ggwp.com.br/api/v1/provincias'),
           axios.get('http://localhost:5001/api/estagios')
         ]);
-        
-        // Log para debug
-        console.log('Dados das empresas:', empRes.data);
-        
         // Filtra estudantes que não têm estágios ativos
         const estudantesComEstagio = new Set(estagiosRes.data.map(estagio => estagio.Estudante_ID));
         const estudantesDisponiveis = estRes.data.filter(estudante => !estudantesComEstagio.has(estudante.id));
-        
         setEstudantes(estudantesDisponiveis);
-        
-        // Filtra apenas empresas ativas
-        const empresasAtivas = empRes.data.filter(empresa => {
-          console.log('Status da empresa:', empresa.Status);
-          return empresa.Status === 'Ativo' || empresa.status === 'Ativo';
-        });
-        console.log('Empresas ativas:', empresasAtivas);
-        setEmpresas(empresasAtivas);
-        
         setProvincias(Array.isArray(provRes.data) ? provRes.data : provRes.data.data || []);
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
@@ -61,6 +47,34 @@ export default function RegistrarEstagio({ onSuccess }) {
     };
     fetchData();
   }, []);
+
+  // Buscar empresas por curso do estudante selecionado
+  useEffect(() => {
+    const fetchEmpresasPorCurso = async () => {
+      if (!formData.Estudante_ID) {
+        setEmpresas([]);
+        return;
+      }
+      // Encontrar o estudante selecionado
+      const estudanteSelecionado = estudantes.find(e => String(e.id) === String(formData.Estudante_ID));
+      console.log('Estudante selecionado:', estudanteSelecionado);
+      const cursoId = estudanteSelecionado?.curso?.id;
+      if (!estudanteSelecionado || !cursoId) {
+        setEmpresas([]);
+        return;
+      }
+      try {
+        const res = await axios.get(`http://localhost:5001/api/empresas/por-curso/${cursoId}`);
+        console.log('Empresas retornadas:', res.data);
+        setEmpresas(res.data);
+      } catch {
+        setEmpresas([]);
+        toast.error('Erro ao buscar empresas para o curso do estudante.');
+      }
+    };
+    fetchEmpresasPorCurso();
+  
+  }, [formData.Estudante_ID, estudantes]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -106,6 +120,11 @@ export default function RegistrarEstagio({ onSuccess }) {
       newErrors.Data_Fim = 'A data de fim é obrigatória';
     } else if (new Date(formData.Data_Fim) < new Date(formData.Data_Inicio)) {
       newErrors.Data_Fim = 'A data de fim deve ser posterior à data de início';
+    }
+
+    // Validação do número de telemóvel do responsável
+    if (formData.Responsavel_Telefone && !/^\d{9}$/.test(formData.Responsavel_Telefone)) {
+      newErrors.Responsavel_Telefone = 'Número de telemóvel inválido (deve conter 9 dígitos)';
     }
 
     setErrors(newErrors);
@@ -189,21 +208,23 @@ export default function RegistrarEstagio({ onSuccess }) {
           <label htmlFor="estudante" className="block text-sm font-medium text-gray-700">
             Estudante <span className="text-red-500">*</span>
           </label>
-          <select
+          <Select
             id="estudante"
             name="Estudante_ID"
-            value={formData.Estudante_ID}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
-          >
-            <option value="">Selecione o estudante</option>
-            {estudantes && estudantes.map((estudante, index) => (
-              <option key={`estudante-${estudante.id || index}`} value={estudante.id}>
-                {estudante.nome || `${estudante.Nome} ${estudante.Sobrenome}`}
-              </option>
-            ))}
-          </select>
+            value={estudantes.find(e => String(e.id) === String(formData.Estudante_ID)) ? {
+              value: formData.Estudante_ID,
+              label: estudantes.find(e => String(e.id) === String(formData.Estudante_ID))?.nome ||
+                `${estudantes.find(e => String(e.id) === String(formData.Estudante_ID))?.Nome || ''} ${estudantes.find(e => String(e.id) === String(formData.Estudante_ID))?.Sobrenome || ''}`
+            } : null}
+            onChange={option => setFormData(prev => ({ ...prev, Estudante_ID: option ? option.value : '' }))}
+            options={estudantes.map(estudante => ({
+              value: estudante.id,
+              label: estudante.nome || `${estudante.Nome || ''} ${estudante.Sobrenome || ''}`
+            }))}
+            placeholder="Selecione ou pesquise o estudante"
+            isClearable
+            classNamePrefix="react-select"
+          />
           {errors.Estudante_ID && <p className="mt-1 text-sm text-red-600">{errors.Estudante_ID}</p>}
         </div>
 

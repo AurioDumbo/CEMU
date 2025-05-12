@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import NotificacoesEstagios from './NotificacoesEstagios';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -26,6 +28,7 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [provincesData, setProvincesData] = useState(null);
   const [companiesData, setCompaniesData] = useState(null);
   const [dashboardData, setDashboardData] = useState({
@@ -38,31 +41,58 @@ export default function Dashboard() {
   const chartRef = useRef(null);
 
   useEffect(() => {
+
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true);
         
-        // Buscar dados gerais do dashboard
+    
         const dashboardResponse = await axios.get('http://localhost:5001/api/dashboard/data');
         setDashboardData(dashboardResponse.data);
 
-        // Buscar dados de estagiários por província
+
         const provinciasResponse = await axios.get('http://localhost:5001/api/dashboard/provincias');
+        
+      
+        const provinciasOrdenadas = provinciasResponse.data.sort((a, b) => b.percentagem - a.percentagem);
+        let labels = [];
+        let data = [];
+        let backgroundColor = [
+          '#10B981', // Verde
+          '#F59E0B', // Laranja
+          '#A5B4FC', // Roxo claro
+          '#EC4899', // Rosa
+          '#8B5CF6', // Roxo
+          '#64748B'  // Cinza para "Outras províncias"
+        ];
+
+        if (provinciasOrdenadas.length > 5) {
+          const top5Provincias = provinciasOrdenadas.slice(0, 5);
+          const outrasProvincias = provinciasOrdenadas.slice(5);
+          const percentagemOutras = outrasProvincias.reduce((sum, prov) => sum + prov.percentagem, 0);
+
+          labels = [...top5Provincias.map(item => item.Provincia), 'Outras províncias'];
+          data = [...top5Provincias.map(item => item.percentagem), percentagemOutras];
+        } else {
+          labels = provinciasOrdenadas.map(item => item.Provincia);
+          data = provinciasOrdenadas.map(item => item.percentagem);
+          // Ajusta as cores para a quantidade de províncias
+          backgroundColor = backgroundColor.slice(0, provinciasOrdenadas.length);
+        }
+
         const provinciasData = {
-          labels: provinciasResponse.data.map(item => item.Provincia),
+          labels,
           datasets: [
             {
               label: 'Estagiários por Província',
-              data: provinciasResponse.data.map(item => item.percentagem),
-              backgroundColor: [
-                '#3B82F6',
-                '#10B981',
-                '#F59E0B',
-                '#A5B4FC',
-                '#EC4899',
-                '#8B5CF6',
-                '#14B8A6'
-              ],
+              data,
+              backgroundColor,
               borderWidth: 0,
             },
           ],
@@ -82,7 +112,13 @@ export default function Dashboard() {
             {
               label: 'Número de Estagiários',
               data: empresasAtivas.map(item => item.total),
-              backgroundColor: '#3B82F6',
+              backgroundColor: [
+                '#ef4444', // vermelho
+                '#3B82F6', // azul
+                '#10B981', // verde
+                '#F59E0B', // laranja
+                '#8B5CF6', // roxo
+              ].slice(0, empresasAtivas.length),
               borderWidth: 0,
             },
           ],
@@ -96,7 +132,7 @@ export default function Dashboard() {
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
 
   // Configuração do gráfico
   const config = {
@@ -129,6 +165,16 @@ export default function Dashboard() {
           bottom: 20,
         },
       },
+      datalabels: {
+        color: '#fff',
+        font: {
+          weight: 'bold',
+          size: 14,
+        },
+        formatter: (value) => {
+          return value + '%';
+        },
+      },
     },
     maintainAspectRatio: false,
   };
@@ -142,17 +188,53 @@ export default function Dashboard() {
       datalabels: {
         anchor: 'end',
         align: 'end',
-        color: '#1E3A8A',
+        color: '#3B82F6',
         font: {
           weight: 'bold',
-          size: 12,
+          size: 16,
         },
+        formatter: (value) => {
+          return value; // Mostra o número de estagiários
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const empresa = context.label;
+            const total = context.raw;
+            return `${empresa}: ${total} estagiário(s)`;
+          },
+        },
+        backgroundColor: '#fff',
+        titleColor: '#3B82F6',
+        bodyColor: '#111',
+        borderColor: '#3B82F6',
+        borderWidth: 1,
+        padding: 12,
+        caretSize: 8,
+        cornerRadius: 8,
+        displayColors: false,
       },
     },
     scales: {
       x: {
-        beginAtZero: true,
+        beginAtZero: false,
+        min: 1,
+        max: 5,
         grid: {
+          display: false,
+        },
+        ticks: {
+          stepSize: 1,
+          callback: function(value) {
+            return Number.isInteger(value) ? value : null;
+          },
+          color: '#111827', // preto
+          font: {
+            size: 14,
+          },
+        },
+        border: {
           display: false,
         },
       },
@@ -160,10 +242,37 @@ export default function Dashboard() {
         grid: {
           display: false,
         },
+        ticks: {
+          color: '#111827',
+          font: {
+            size: 14,
+          },
+        },
+        border: {
+          display: false,
+        },
       },
+    },
+    animation: {
+      duration: 1000,
+      easing: 'easeOutQuart',
     },
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        left: 10,
+        right: 30,
+        top: 10,
+        bottom: 10,
+      },
+    },
+    elements: {
+      bar: {
+        borderRadius: 8,
+        borderSkipped: false,
+      },
+    },
   };
 
   return (

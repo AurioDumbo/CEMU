@@ -95,3 +95,4 @@ AFTER Sobrenome;
 
 ALTER TABLE Estudante
 ADD COLUMN Sexo CHAR(1) NOT NULL COMMENT 'M = Masculino, F = Feminino';
+ 

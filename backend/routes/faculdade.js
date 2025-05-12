@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const faculdadeController = require('../controllers/faculdadeController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-// Rotas
-router.post('/', faculdadeController.createFaculdade); // Criar uma nova faculdade
-router.get('/', faculdadeController.getAllFaculdades); // Listar todas as faculdades
-router.delete('/:id', faculdadeController.deleteFaculdade); // Remover uma faculdade por ID
+// Rotas protegidas por autenticação
+router.get('/', authMiddleware, faculdadeController.getAllFaculdades);
+router.get('/:id', authMiddleware, faculdadeController.getFaculdadeById);
+router.post('/', authMiddleware, faculdadeController.createFaculdade);
+router.put('/:id', authMiddleware, faculdadeController.updateFaculdade);
+router.delete('/:id', authMiddleware, faculdadeController.deleteFaculdade);
 
-module.exports = router;
+module.exports = router; 

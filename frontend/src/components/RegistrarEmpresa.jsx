@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 export default function RegistrarEmpresa({ onSuccess }) {
-  // Removed unused navigate variable
+  const navigate = useNavigate();
   const [cursos, setCursos] = useState([]);
   const [errors, setErrors] = useState({});
   const [cursosInteressados, setCursosInteressados] = useState([]);
@@ -15,21 +16,36 @@ export default function RegistrarEmpresa({ onSuccess }) {
     Provincia: '',
     Telefone: '',
     Email: '',
-    Status: 'Pendente'
+    Status: 'Pendente',
+    Sede: false
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+          console.error('Token não encontrado');
+          navigate('/login');
+          return;
+        }
+
         const [cursosResponse, provinciasResponse] = await Promise.all([
-          axios.get('http://localhost:5001/api/curso'),
+          axios.get('http://localhost:5001/api/curso', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
           axios.get('https://angolaprovinciasapi.ggwp.com.br/api/v1/provincias')
         ]);
         setCursos(cursosResponse.data);
         setProvincias(Array.isArray(provinciasResponse.data) ? provinciasResponse.data : provinciasResponse.data.data || []);
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        toast.error('Erro ao carregar dados. Por favor, tente novamente.');
+        if (error.response && error.response.status === 401) {
+          toast.error('Sessão expirada. Por favor, faça login novamente.');
+          navigate('/login');
+        } else {
+          toast.error('Erro ao carregar dados. Por favor, tente novamente.');
+        }
       }
     };
 
@@ -41,8 +57,8 @@ export default function RegistrarEmpresa({ onSuccess }) {
     
     if (!formData.NIF.trim()) {
       newErrors.NIF = 'O NIF é obrigatório';
-    } else if (!/^\d{9}$/.test(formData.NIF)) {
-      newErrors.NIF = 'NIF inválido (deve conter 9 dígitos)';
+    } else if (!/^\d{14}$/.test(formData.NIF)) {
+      newErrors.NIF = 'NIF inválido (deve conter 14 dígitos)';
     }
     
     if (!formData.Nome.trim()) {
@@ -61,8 +77,8 @@ export default function RegistrarEmpresa({ onSuccess }) {
       newErrors.Email = 'Email inválido';
     }
     
-    if (formData.Telefone && !/^[0-9+\s-()]{9,}$/.test(formData.Telefone)) {
-      newErrors.Telefone = 'Telefone inválido';
+    if (formData.Telefone && !/^\d{9}$/.test(formData.Telefone)) {
+      newErrors.Telefone = 'Número de telemóvel inválido (deve conter 9 dígitos)';
     }
 
     if (cursosInteressados.length === 0) {
@@ -74,9 +90,11 @@ export default function RegistrarEmpresa({ onSuccess }) {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
+    });
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -90,49 +108,73 @@ export default function RegistrarEmpresa({ onSuccess }) {
     }
 
     try {
+      const token = sessionStorage.getItem('token');
+      if (!token) {
+        toast.error('Sessão expirada. Por favor, faça login novamente.');
+        navigate('/login');
+        return;
+      }
+
       const empresaData = {
         NIF: formData.NIF,
         Nome: formData.Nome,
         Provincia: formData.Provincia,
         Telefone: formData.Telefone,
         Email: formData.Email,
-        Status: formData.Status
+        Status: formData.Status,
+        Sede: formData.Sede
       };
 
-      const response = await axios.post('http://localhost:5001/api/empresas', empresaData);
+      const response = await axios.post('http://localhost:5001/api/empresas', empresaData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const empresaId = response.data.id;
 
-      for (const cursoId of cursosInteressados) {
-        try {
-          await axios.post('http://localhost:5001/api/empresas/cursos', {
-            Empresa_ID: empresaId,
-            Curso_ID: cursoId
-          });
-        } catch (error) {
-          console.error('Erro ao registrar curso de interesse:', error);
-          toast.error('Erro ao registrar alguns cursos de interesse. Por favor, verifique os cursos selecionados.');
-        }
-      }
+      await axios.post('http://localhost:5001/api/empresa_curso', {
+        empresa_id: empresaId,
+        cursos: cursosInteressados
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      onSuccess();
       setFormData({
         NIF: '',
         Nome: '',
         Provincia: '',
         Telefone: '',
         Email: '',
-        Status: 'Pendente'
+        Status: 'Pendente',
+        Sede: false
       });
       setCursosInteressados([]);
       toast.success('Empresa registrada com sucesso!');
+      
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Erro ao registrar empresa:', error);
-      if (error.response?.data?.error) {
-        toast.error(error.response.data.error);
-      } else if (error.response?.status === 400) {
-        toast.error('Por favor, verifique se todos os campos obrigatórios foram preenchidos corretamente.');
+      if (error.response) {
+        if (error.response.status === 401) {
+          toast.error('Sessão expirada. Por favor, faça login novamente.');
+          navigate('/login');
+        } else if (error.response.status === 409) {
+          if (error.response.data.error.includes('NIF')) {
+            toast.error('Este NIF já está registrado no sistema');
+          } else if (error.response.data.error.includes('Email')) {
+            toast.error('Este email já está registrado no sistema');
+          } else if (error.response.data.error.includes('Telefone')) {
+            toast.error('Este número de telefone já está registrado no sistema');
+          }
+        } else if (error.response.status === 400) {
+          toast.error('Por favor, verifique se todos os campos obrigatórios foram preenchidos corretamente.');
+        } else {
+          toast.error(`Erro inesperado do servidor (código ${error.response.status}). Tente novamente.`);
+        }
+      } else if (error.request) {
+        toast.error('Não foi possível conectar ao servidor. Verifique sua conexão com a internet ou se o backend está rodando.');
       } else {
-        toast.error('Ocorreu um erro ao registrar a empresa. Por favor, tente novamente.');
+        toast.error('Ocorreu um erro inesperado. Tente novamente.');
       }
     }
   };
@@ -241,6 +283,20 @@ export default function RegistrarEmpresa({ onSuccess }) {
             <option value="Inativo">Inativo</option>
           </select>
           {errors.Status && <p className="mt-1 text-sm text-red-600">{errors.Status}</p>}
+        </div>
+
+        <div className="sm:col-span-3 flex items-center mt-6">
+          <input
+            type="checkbox"
+            name="Sede"
+            id="Sede"
+            checked={formData.Sede}
+            onChange={handleChange}
+            className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded mr-2"
+          />
+          <label htmlFor="Sede" className="block text-sm font-medium text-gray-700 select-none cursor-pointer">
+            Sede
+          </label>
         </div>
 
         <div className="sm:col-span-6">
