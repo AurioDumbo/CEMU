@@ -1,4 +1,5 @@
 const db = require('../config/db'); // Certifique-se de que o módulo de conexão com o banco de dados está configurado
+const { io } = require('../server'); // Importe o io
 
 // CREATE: Inserir um novo estágio
 async function createEstagio(req, res) {
@@ -264,10 +265,66 @@ async function deleteEstagio(req, res) {
     }
 }
 
+async function getEstagiosProximos(req, res) {
+    const dias = parseInt(req.query.dias) || 7;
+    const hoje = new Date();
+    const dataLimite = new Date();
+    dataLimite.setDate(hoje.getDate() + dias);
+
+    try {
+        // Estágios prestes a começar
+        const [aComecar] = await db.execute(
+            `SELECT * FROM Estagio WHERE Inicio BETWEEN ? AND ?`,
+            [hoje.toISOString().split('T')[0], dataLimite.toISOString().split('T')[0]]
+        );
+        // Estágios prestes a terminar
+        const [aTerminar] = await db.execute(
+            `SELECT * FROM Estagio WHERE Termino BETWEEN ? AND ?`,
+            [hoje.toISOString().split('T')[0], dataLimite.toISOString().split('T')[0]]
+        );
+        res.json({ aComecar, aTerminar });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+// Função para emitir notificações
+async function emitirNotificacoesEstagios() {
+    const dias = 7;
+    const hoje = new Date();
+    const dataLimite = new Date();
+    dataLimite.setDate(hoje.getDate() + dias);
+
+    // Estágios prestes a começar
+    const [aComecar] = await db.execute(
+        `SELECT * FROM Estagio WHERE Inicio BETWEEN ? AND ?`,
+        [hoje.toISOString().split('T')[0], dataLimite.toISOString().split('T')[0]]
+    );
+    // Estágios prestes a terminar
+    const [aTerminar] = await db.execute(
+        `SELECT * FROM Estagio WHERE Termino BETWEEN ? AND ?`,
+        [hoje.toISOString().split('T')[0], dataLimite.toISOString().split('T')[0]]
+    );
+
+    // Envia para todos conectados
+    if (aComecar.length > 0) {
+        aComecar.forEach(estagio => {
+            io.emit('notificacaoEstagio', { tipo: 'aComecar', ...estagio });
+        });
+    }
+    if (aTerminar.length > 0) {
+        aTerminar.forEach(estagio => {
+            io.emit('notificacaoEstagio', { tipo: 'aTerminar', ...estagio });
+        });
+    }
+}
+
 module.exports = {
     createEstagio,
     getAllEstagios,
     getEstagioById,
     updateEstagio,
-    deleteEstagio
+    deleteEstagio,
+    getEstagiosProximos,
+    emitirNotificacoesEstagios
 };

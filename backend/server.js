@@ -5,6 +5,9 @@ const db = require('./config/db');
 const sequelize = require('./config/database');
 const { Estudante, updateEstudanteEstado } = require('./models/estudante');
 const cron = require('node-cron');
+const http = require('http');
+const { Server } = require('socket.io');
+const { emitirNotificacoesEstagios } = require('./controllers/estagiosController');
 
 const empresaCursoRoutes = require('./routes/empresaCurso');
 const estudantesRoutes = require('./routes/estudantes');
@@ -65,7 +68,20 @@ app.get('/api/mensagem',(req, res) => {
     res.json({mensagem: 'Backend rodando'})
 })
 
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: '*' } });
+
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
+
+cron.schedule('0 8 * * *', async () => { 
+  try {
+    await emitirNotificacoesEstagios();
+  } catch (error) {
+    console.error('Erro ao emitir notificações de estágios:', error);
+  }
+});
+
+module.exports = { app, server, io };

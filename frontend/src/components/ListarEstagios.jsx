@@ -3,6 +3,9 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import EditIcon from '../assets/icons/edit.svg?react';
 import DeleteIcon from '../assets/icons/delete.svg?react';
+import { canEditContent } from '../utils/permissions';
+import { toast } from 'react-hot-toast';
+import { Dialog } from '@headlessui/react';
 
 export default function ListarEstagios() {
   const navigate = useNavigate();
@@ -12,16 +15,26 @@ export default function ListarEstagios() {
   const [currentPage, setCurrentPage] = useState(1);
   const [filtroProvincia, setFiltroProvincia] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
+  const [canEdit] = useState(canEditContent());
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
   const itemsPerPage = 8;
 
   useEffect(() => {
+
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
     fetchEstagios();
     
-    // Atualiza os estágios a cada 5 minutos
+ 
     const interval = setInterval(fetchEstagios, 5 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [navigate]);
 
   const fetchEstagios = async () => {
     try {
@@ -38,7 +51,7 @@ export default function ListarEstagios() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    // Formato compatível com Excel em português
+  
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
@@ -52,6 +65,12 @@ export default function ListarEstagios() {
 
   const getRemunerado = (remunerado) => {
     return remunerado === 1 ? 'Sim' : 'Não';
+  };
+
+
+  const capitalize = (str) => {
+    if (!str) return '';
+    return str.replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
   const filteredEstagios = estagios.filter(estagio => {
@@ -125,14 +144,36 @@ export default function ListarEstagios() {
   };
 
   const handleDelete = async (ids) => {
-    if (window.confirm('Tem certeza de que deseja excluir os estágios selecionados?')) {
-      try {
-        await axios.delete('http://localhost:5001/api/estagios', { data: { ids } });
-        fetchEstagios();
-      } catch (error) {
-        console.error('Erro ao excluir estágios:', error);
-        alert('Erro ao excluir os estágios');
+    setSelectedIds(ids);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await Promise.all(selectedIds.map(id => 
+        axios.delete(`http://localhost:5001/api/estagios/${id}`, {
+          headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
+        })
+      ));
+      toast.success('Estágios excluídos com sucesso!');
+      fetchEstagios();
+    } catch (error) {
+      console.error('Erro ao excluir estágios:', error);
+      if (error.response) {
+        if (error.response.status === 404) {
+          toast.error('Estágio não encontrado');
+        } else if (error.response.status === 401) {
+          toast.error('Não autorizado. Faça login novamente.');
+          navigate('/login');
+        } else {
+          toast.error('Erro ao excluir estágios. Tente novamente.');
+        }
+      } else {
+        toast.error('Erro ao conectar com o servidor. Verifique sua conexão.');
       }
+    } finally {
+      setIsDeleteModalOpen(false);
+      setSelectedIds([]);
     }
   };
 
@@ -161,7 +202,7 @@ export default function ListarEstagios() {
             >
               <option value="">Província</option>
               {[...new Set(estagios.map(e => e.Provincia))].map(provincia => (
-                <option key={provincia} value={provincia}>{provincia}</option>
+                <option key={provincia} value={provincia}>{capitalize(provincia)}</option>
               ))}
             </select>
             <select
@@ -215,9 +256,11 @@ export default function ListarEstagios() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Estado
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
+                  {canEdit && (
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -246,8 +289,8 @@ export default function ListarEstagios() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{estagio.Provincia}</div>
-                      <div className="text-sm text-gray-500">{estagio.Municipio}</div>
+                      <div className="text-sm text-gray-900">{capitalize(estagio.Provincia)}</div>
+                      <div className="text-sm text-gray-500">{capitalize(estagio.Municipio)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -268,28 +311,24 @@ export default function ListarEstagios() {
                         {estagio.estudante_estado}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(estagio.ID);
-                          }}
-                          className="p-1 text-blue-600 hover:text-blue-800"
-                        >
-                          <EditIcon className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete([estagio.ID]);
-                          }}
-                          className="p-1 text-red-600 hover:text-red-800"
-                        >
-                          <DeleteIcon className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
+                    {canEdit && (
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => handleEdit(estagio.ID)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <EditIcon className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete([estagio.ID])}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <DeleteIcon className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -318,6 +357,42 @@ export default function ListarEstagios() {
           </button>
         </div>
       </div>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <Dialog
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="mx-auto max-w-sm rounded-xl bg-white p-6 shadow-lg">
+            <Dialog.Title className="text-lg font-medium text-gray-900">
+              Confirmar Exclusão
+            </Dialog.Title>
+            
+            <Dialog.Description className="mt-2 text-sm text-gray-500">
+              Tem certeza que deseja excluir {selectedIds.length > 1 ? 'os estágios selecionados' : 'este estágio'}? Esta ação não pode ser desfeita.
+            </Dialog.Description>
+
+            <div className="mt-4 flex justify-end space-x-3">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Excluir
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 }

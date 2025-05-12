@@ -4,8 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 export default function EditarEmpresa() {
-  const params = useParams();
-  const { id } = params;
+  const { id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     NIF: '',
@@ -17,12 +16,13 @@ export default function EditarEmpresa() {
   });
   const [provincias, setProvincias] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cursos, setCursos] = useState([]);
+  const [cursosInteresse, setCursosInteresse] = useState([]);
 
   useEffect(() => {
     console.log('EditarEmpresa montado');
     console.log('ID recebido:', id);
-    console.log('URL atual:', window.location.href);
-    console.log('Params:', params);
+    console.log('Tipo do ID:', typeof id);
     
     if (!id) {
       console.error('ID não encontrado na URL');
@@ -37,11 +37,14 @@ export default function EditarEmpresa() {
       navigate('/login');
       return;
     }
-
+  
+    }, []);
+  
+  useEffect(() => {
     fetchEmpresa();
     fetchProvincias();
-    // eslint-disable-next-line
-  }, [id, navigate, params]);
+    fetchCursos().then(fetchCursosInteresse);
+  }, [id, navigate]);
 
   const fetchEmpresa = async () => {
     try {
@@ -93,13 +96,89 @@ export default function EditarEmpresa() {
     }
   };
 
+  const fetchCursos = async () => {
+    try {
+      const token = sessionStorage.getItem('token');
+      if (!token) {
+        console.error('Token não encontrado');
+        navigate('/login');
+        return;
+      }
+
+      const res = await axios.get('http://localhost:5001/api/curso', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCursos(res.data);
+    } catch (error) {
+      console.error('Erro ao carregar cursos:', error);
+      toast.error('Erro ao carregar lista de cursos');
+    }
+  };
+
+  const fetchCursosInteresse = async () => {
+    try {
+      if (!id) {
+        console.error('ID da empresa não encontrado');
+        return;
+      }
+
+      // Verifica se o id é um número válido
+      const empresaId = parseInt(id);
+      if (isNaN(empresaId)) {
+        console.error('ID da empresa inválido:', id);
+        return;
+      }
+
+      const token = sessionStorage.getItem('token');
+      if (!token) {
+        console.error('Token não encontrado');
+        navigate('/login');
+        return;
+      }
+
+      const res = await axios.get(`http://localhost:5001/api/empresa_curso/empresa/${empresaId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('Cursos de interesse recebidos:', res.data); // <-- Adicione isso
+      setCursosInteresse(res.data);
+    } catch (error) {
+      console.error('Erro ao carregar cursos de interesse:', error);
+      toast.error('Erro ao carregar cursos de interesse da empresa');
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Ajuste o handleCursoChange para aceitar tanto id quanto curso_id
+  const handleCursoChange = (cursoId) => {
+    setCursosInteresse(prev => {
+      if (prev.some(c => Number(c.id) === Number(cursoId))) {
+        return prev.filter(c => Number(c.id) !== Number(cursoId));
+      } else {
+        const curso = cursos.find(c => Number(c.curso_id) === Number(cursoId));
+        return [...prev, { id: cursoId, nome: curso.curso_nome }];
+      }
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validação do número de telemóvel
+    if (formData.Telefone && formData.Telefone.length !== 9) {
+      toast.error('Número de telemóvel inválido. Deve conter exatamente 9 dígitos.');
+      return;
+    }
+
+    // Validação do email
+    if (formData.Email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.Email)) {
+      toast.error('Email inválido. Por favor, insira um email válido.');
+      return;
+    }
+
     try {
       const token = sessionStorage.getItem('token');
       if (!token) {
@@ -107,21 +186,51 @@ export default function EditarEmpresa() {
         return;
       }
 
-      await axios.put(`http://localhost:5001/api/empresas/${id}`, {
-        nif: formData.NIF,
-        nome: formData.Nome,
-        provincia: formData.Provincia,
-        telefone: formData.Telefone,
-        email: formData.Email,
-        status: formData.Status
-      }, {
+      const dataToSend = {
+        NIF: formData.NIF,
+        Nome: formData.Nome,
+        Provincia: formData.Provincia,
+        Telefone: formData.Telefone,
+        Email: formData.Email,
+        Status: formData.Status
+      };
+
+      await axios.put(`http://localhost:5001/api/empresas/${id}`, dataToSend, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      await axios.put(
+        `http://localhost:5001/api/empresa_curso/empresa/${id}`,
+        { cursos: cursosInteresse.map(c => Number(c.id)) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
       toast.success('Empresa atualizada com sucesso!');
       navigate('/registros');
     } catch (error) {
       console.error('Erro ao atualizar empresa:', error);
-      toast.error('Erro ao atualizar empresa. Tente novamente.');
+      if (error.response) {
+        if (error.response.status === 400) {
+          toast.error('Dados inválidos. Verifique se todos os campos foram preenchidos corretamente.');
+        } else if (error.response.status === 409) {
+          if (error.response.data.error.includes('Email')) {
+            toast.error('Este email já está registrado no sistema');
+          } else if (error.response.data.error.includes('Telefone')) {
+            toast.error('Este número de telefone já está registrado no sistema');
+          } else if (error.response.data.error.includes('NIF')) {
+            toast.error('Este NIF já está registrado no sistema');
+          }
+        } else if (error.response.status === 401) {
+          toast.error('Não autorizado. Faça login novamente.');
+          navigate('/login');
+        } else {
+          toast.error(`Erro inesperado do servidor (código ${error.response.status}). Tente novamente.`);
+        }
+      } else if (error.request) {
+        toast.error('Não foi possível conectar ao servidor. Verifique sua conexão com a internet ou se o backend está rodando.');
+      } else {
+        toast.error('Ocorreu um erro inesperado. Tente novamente.');
+      }
     }
   };
 
@@ -223,6 +332,32 @@ export default function EditarEmpresa() {
           </button>
         </div>
       </form>
+      <div className="mt-6">
+        <h3 className="font-bold mb-2">Cursos de Interesse da Empresa</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {cursos.map(curso => (
+            <div 
+              key={curso.curso_id} 
+              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                cursosInteresse.some(c => (c.id || c.curso_id) === curso.curso_id) 
+                  ? 'bg-blue-100 border-blue-500' 
+                  : 'bg-white border-gray-200 hover:bg-gray-50'
+              }`}
+              onClick={() => handleCursoChange(curso.curso_id)}
+            >
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={cursosInteresse.some(c => Number(c.id) === Number(curso.curso_id))}
+                  onChange={() => handleCursoChange(curso.curso_id)}
+                  className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span className="text-gray-700">{curso.curso_nome}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

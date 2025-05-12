@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 const RegistrarEstudante = ({ onSuccess }) => {
   const navigate = useNavigate();
   const [cursos, setCursos] = useState([]);
+  const [cursosFiltrados, setCursosFiltrados] = useState([]);
   const [faculdades, setFaculdades] = useState([]);
   const [formData, setFormData] = useState({
     Nome: '',
@@ -46,6 +47,20 @@ const RegistrarEstudante = ({ onSuccess }) => {
     fetchData();
   }, [navigate]);
 
+  // Efeito para filtrar cursos quando a faculdade é selecionada
+  useEffect(() => {
+    if (formData.Faculdade_ID) {
+      const cursosDaFaculdade = cursos.filter(curso => 
+        curso.faculdade_id === parseInt(formData.Faculdade_ID)
+      );
+      setCursosFiltrados(cursosDaFaculdade);
+      // Limpa o curso selecionado quando muda a faculdade
+      setFormData(prev => ({ ...prev, Curso_ID: '' }));
+    } else {
+      setCursosFiltrados([]);
+    }
+  }, [formData.Faculdade_ID, cursos]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -56,6 +71,19 @@ const RegistrarEstudante = ({ onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validação do número de telemóvel
+    if (formData.Telefone && formData.Telefone.length !== 9) {
+      toast.error('Número de telemóvel inválido. Deve conter exatamente 9 dígitos.');
+      return;
+    }
+
+    // Validação do email
+    if (formData.Email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.Email)) {
+      toast.error('Email inválido. Por favor, insira um email válido.');
+      return;
+    }
+
     try {
       const dataToSend = {
         ...formData,
@@ -77,11 +105,28 @@ const RegistrarEstudante = ({ onSuccess }) => {
         });
         if (onSuccess) onSuccess();
         toast.success('Estudante registrado com sucesso!');
-
       }
     } catch (error) {
       console.error('Erro ao registrar estudante:', error);
-      toast.error('Erro ao registrar estudante. Por favor, tente novamente.');
+      if (error.response) {
+        if (error.response.status === 409) {
+          if (error.response.data.error.includes('Email')) {
+            toast.error('Este email já está registrado no sistema');
+          } else if (error.response.data.error.includes('Telefone')) {
+            toast.error('Este número de telefone já está registrado no sistema');
+          }
+        } else if (error.response.status === 400) {
+          toast.error('Por favor, verifique se todos os campos obrigatórios foram preenchidos corretamente.');
+        } else if (error.response.status === 401) {
+          toast.error('Não autorizado. Faça login novamente.');
+        } else {
+          toast.error(`Erro inesperado do servidor (código ${error.response.status}). Tente novamente.`);
+        }
+      } else if (error.request) {
+        toast.error('Não foi possível conectar ao servidor. Verifique sua conexão com a internet ou se o backend está rodando.');
+      } else {
+        toast.error('Ocorreu um erro inesperado. Tente novamente.');
+      }
     }
   };
 
@@ -195,10 +240,11 @@ const RegistrarEstudante = ({ onSuccess }) => {
             value={formData.Curso_ID}
             onChange={handleChange}
             required
+            disabled={!formData.Faculdade_ID}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           >
             <option key="default-curso" value="">Selecione o curso</option>
-            {cursos.filter(curso => curso.curso_id).map((curso) => (
+            {cursosFiltrados.map((curso) => (
               <option key={`curso-${curso.curso_id}`} value={curso.curso_id}>
                 {curso.curso_nome}
               </option>

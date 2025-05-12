@@ -14,6 +14,11 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    role: {
+        type: DataTypes.TINYINT,
+        allowNull: false,
+        defaultValue: 3, // 1=Admin, 2=Funcionário, 3=Leitor
+    }
 }, {
     tableName: 'users', 
     timestamps: true, 

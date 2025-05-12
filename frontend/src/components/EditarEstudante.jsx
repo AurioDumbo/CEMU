@@ -16,44 +16,94 @@ export default function EditarEstudante() {
     Sexo: ''
   });
   const [cursos, setCursos] = useState([]);
+  const [cursosFiltrados, setCursosFiltrados] = useState([]);
   const [faculdades, setFaculdades] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchEstudante();
-    fetchCursos();
-    fetchFaculdades();
-    // eslint-disable-next-line
+    // Carrega cursos e faculdades primeiro, depois carrega o estudante
+    const carregarDados = async () => {
+      await fetchFaculdades();
+      await fetchCursos();
+      await fetchEstudante();
+      setLoading(false);
+    };
+    carregarDados();
   }, []);
+
+  useEffect(() => {
+    if (formData.Faculdade_ID) {
+      const cursosDaFaculdade = cursos.filter(curso => 
+        String(curso.faculdade_id) === String(formData.Faculdade_ID)
+      );
+      setCursosFiltrados(cursosDaFaculdade);
+
+      // Se o curso atual não está nos cursos filtrados, limpa o Curso_ID
+      if (
+        formData.Curso_ID &&
+        !cursosDaFaculdade.some(c => String(c.curso_id) === String(formData.Curso_ID))
+      ) {
+        setFormData(prev => ({ ...prev, Curso_ID: '' }));
+      }
+    } else {
+      setCursosFiltrados([]);
+      if (formData.Curso_ID) {
+        setFormData(prev => ({ ...prev, Curso_ID: '' }));
+      }
+    }
+  }, [formData.Faculdade_ID, cursos]);
 
   const fetchEstudante = async () => {
     try {
       const res = await axios.get(`http://localhost:5001/api/estudantes/${id}`);
+      const estudante = res.data;
       setFormData({
-        Nome: res.data.nome || '',
-        Sobrenome: res.data.sobrenome || '',
-        Curso_ID: res.data.curso_id || '',
-        Telefone: res.data.telefone || '',
-        Email: res.data.email || '',
-        Faculdade_ID: res.data.faculdade_id || '',
-        Sexo: res.data.sexo || ''
+        Nome: estudante.nome || '',
+        Sobrenome: estudante.sobrenome || '',
+        Curso_ID: estudante.curso?.id || '',
+        Telefone: estudante.telefone || '',
+        Email: estudante.email || '',
+        Faculdade_ID: estudante.faculdade?.id || '',
+        Sexo: estudante.sexo || ''
       });
-    } catch {
+    } catch (error) {
+      console.error('Erro ao carregar estudante:', error);
       toast.error('Erro ao carregar estudante.');
       navigate('/registros');
-    } finally {
-      setLoading(false);
     }
   };
 
   const fetchCursos = async () => {
-    const res = await axios.get('http://localhost:5001/api/cursos');
-    setCursos(res.data);
+    try {
+      const token = sessionStorage.getItem('token');
+      const res = await axios.get('http://localhost:5001/api/curso', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('Cursos retornados:', res.data); // Para debug
+      setCursos(res.data);
+      if (formData.Faculdade_ID) {
+        const cursosDaFaculdade = res.data.filter(curso => 
+          String(curso.faculdade_id) === String(formData.Faculdade_ID)
+        );
+        setCursosFiltrados(cursosDaFaculdade);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar cursos:', error);
+      toast.error('Erro ao carregar cursos.');
+    }
   };
 
   const fetchFaculdades = async () => {
-    const res = await axios.get('http://localhost:5001/api/faculdades');
-    setFaculdades(res.data);
+    try {
+      const token = sessionStorage.getItem('token');
+      const res = await axios.get('http://localhost:5001/api/faculdade', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFaculdades(res.data);
+    } catch (error) {
+      console.error('Erro ao carregar faculdades:', error);
+      toast.error('Erro ao carregar faculdades.');
+    }
   };
 
   const handleChange = (e) => {
@@ -63,20 +113,43 @@ export default function EditarEstudante() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const toastId = toast.loading('Atualizando estudante...');
     try {
-      await axios.put(`http://localhost:5001/api/estudantes/${id}`, {
-        nome: formData.Nome,
-        sobrenome: formData.Sobrenome,
-        curso_id: formData.Curso_ID,
-        telefone: formData.Telefone,
-        email: formData.Email,
-        faculdade_id: formData.Faculdade_ID,
-        sexo: formData.Sexo
+      const dadosParaEnviar = {
+        Nome: formData.Nome,
+        Sobrenome: formData.Sobrenome,
+        Curso_ID: parseInt(formData.Curso_ID) || null,
+        Telefone: formData.Telefone || null,
+        Email: formData.Email || null,
+        Faculdade_ID: parseInt(formData.Faculdade_ID) || null,
+        Sexo: formData.Sexo,
+        Estado: 'Pendente'
+      };
+      
+      console.log('Dados enviados:', dadosParaEnviar);
+      
+      const response = await axios.put(`http://localhost:5001/api/estudantes/${id}`, dadosParaEnviar);
+      console.log('Resposta do servidor:', response.data);
+      
+      toast.dismiss(toastId);
+      toast.success('Estudante atualizado com sucesso!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
       });
-      toast.success('Estudante atualizado com sucesso!');
-      navigate('/registros');
-    } catch {
-      toast.error('Erro ao atualizar estudante.');
+      
+      setTimeout(() => {
+        navigate('/registros');
+      }, 1000);
+      
+    } catch (error) {
+      toast.dismiss(toastId);
+      console.error('Erro ao atualizar:', error);
+      console.error('Detalhes do erro:', error.response?.data);
+      toast.error(`Erro ao atualizar estudante: ${error.response?.data?.error || 'Erro desconhecido'}`);
     }
   };
 
@@ -110,21 +183,6 @@ export default function EditarEstudante() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Curso *</label>
-            <select
-              name="Curso_ID"
-              value={formData.Curso_ID}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-            >
-              <option value="">Selecione o curso</option>
-              {cursos.map(curso => (
-                <option key={curso.id} value={curso.id}>{curso.nome}</option>
-              ))}
-            </select>
-          </div>
-          <div>
             <label className="block text-sm font-medium text-gray-700">Faculdade *</label>
             <select
               name="Faculdade_ID"
@@ -135,7 +193,23 @@ export default function EditarEstudante() {
             >
               <option value="">Selecione a faculdade</option>
               {faculdades.map(fac => (
-                <option key={fac.id} value={fac.id}>{fac.nome}</option>
+                <option key={fac.ID} value={fac.ID}>{fac.Nome}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Curso *</label>
+            <select
+              name="Curso_ID"
+              value={formData.Curso_ID}
+              onChange={handleChange}
+              required
+              disabled={!formData.Faculdade_ID}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+            >
+              <option value="">Selecione o curso</option>
+              {cursosFiltrados.map(curso => (
+                <option key={curso.curso_id} value={curso.curso_id}>{curso.curso_nome}</option>
               ))}
             </select>
           </div>
