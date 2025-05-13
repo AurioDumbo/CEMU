@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sql = require('../config/db');
 
 const Empresa = sequelize.define('Empresa', {
   NIF: {

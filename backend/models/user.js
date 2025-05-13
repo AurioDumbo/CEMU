@@ -1,27 +1,23 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); 
+const db = require('../config/db');
 
-const User = sequelize.define('User', {
-    email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-            isEmail: true,
-        },
-    },
-    password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    role: {
-        type: DataTypes.TINYINT,
-        allowNull: false,
-        defaultValue: 3, // 1=Admin, 2=Funcionário, 3=Leitor
+class User {
+    static async create({ email, password, role = 3 }) {
+        const [result] = await db.execute(
+            'INSERT INTO users (email, password, role) VALUES (?, ?, ?)',
+            [email, password, role]
+        );
+        return result.insertId;
     }
-}, {
-    tableName: 'users', 
-    timestamps: true, 
-});
+
+    static async findByEmail(email) {
+        const [rows] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        return rows[0] || null;
+    }
+
+    static async findById(id) {
+        const [rows] = await db.execute('SELECT * FROM users WHERE id = ?', [id]);
+        return rows[0] || null;
+    }
+}
 
 module.exports = User;

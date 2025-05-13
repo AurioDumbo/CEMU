@@ -1,4 +1,5 @@
 const db = require('../config/db');
+// Removed unused 'EmpresaCurso' declaration
 
 const createEmpresaCurso = async (req, res) => {
     const { empresa_id, cursos } = req.body;
@@ -8,7 +9,7 @@ const createEmpresaCurso = async (req, res) => {
     }
 
     try {
-        // Inserir cada curso individualmente
+
         for (const curso_id of cursos) {
             const sql = 'INSERT INTO Empresa_Curso (Empresa_ID, Curso_ID) VALUES (?, ?)';
             await db.execute(sql, [empresa_id, curso_id]);
@@ -96,7 +97,7 @@ const deleteEmpresaCurso = async (req, res) => {
     }
 };
 
-// Atualizar todos os cursos de interesse de uma empresa
+
 const updateCursosInteresseEmpresa = async (req, res) => {
     const { empresaId } = req.params;
     const { cursos } = req.body;
@@ -106,9 +107,9 @@ const updateCursosInteresseEmpresa = async (req, res) => {
     }
 
     try {
-        // Remove todos os cursos atuais da empresa
+ 
         await db.execute('DELETE FROM Empresa_Curso WHERE Empresa_ID = ?', [empresaId]);
-        // Adiciona os novos cursos
+
         for (const cursoId of cursos) {
             await db.execute('INSERT INTO Empresa_Curso (Empresa_ID, Curso_ID) VALUES (?, ?)', [empresaId, cursoId]);
         }
@@ -118,46 +119,67 @@ const updateCursosInteresseEmpresa = async (req, res) => {
     }
 };
 
-// Buscar todos os cursos de interesse de uma empresa
+
 const getCursosInteresseEmpresa = async (req, res) => {
-    const { empresaId } = req.params;
+    console.log('=== INICIO getCursosInteresseEmpresa ===');
+    console.log('Request params:', req.params);
     
-    // Verifica se empresaId é um número válido e positivo
-    if (!empresaId || isNaN(empresaId) || parseInt(empresaId) <= 0) {
-        return res.status(400).json({ error: 'ID da empresa inválido. Deve ser um número positivo.' });
+    const { empresaId } = req.params;
+    if (!empresaId) {
+        console.error('empresaId não fornecido');
+        return res.status(400).json({ error: 'ID da empresa é obrigatório' });
     }
 
-    const id = parseInt(empresaId);
-    
     try {
-        // Primeiro verifica se a empresa existe
-        const [empresa] = await db.execute('SELECT ID FROM Empresa WHERE ID = ?', [id]);
+        const id = parseInt(empresaId);
+        if (isNaN(id)) {
+            console.error('ID inválido:', empresaId);
+            return res.status(400).json({ error: 'ID da empresa inválido' });
+        }
 
-        if (empresa.length === 0) {
+        // First check if empresa exists
+        const [empresa] = await db.execute(
+            'SELECT ID FROM Empresa WHERE ID = ?',
+            [id]
+        );
+
+        if (!empresa || empresa.length === 0) {
             return res.status(404).json({ error: 'Empresa não encontrada' });
         }
 
-        // Busca os cursos de interesse
+        // Then get cursos
         const [rows] = await db.execute(
-            `SELECT 
-                ec.Curso_ID,
-                c.Nome as curso_nome
-             FROM Empresa_Curso ec
-             INNER JOIN Curso c ON ec.Curso_ID = c.ID
-             WHERE ec.Empresa_ID = ?`,
+            'SELECT Curso_ID FROM Empresa_Curso WHERE Empresa_ID = ?',
             [id]
         );
         
-        // Retorna um array com os IDs dos cursos e seus nomes
-        res.json(rows.map(row => ({
-            id: row.Curso_ID,
-            nome: row.curso_nome
-        })));
+        console.log('Resultado da query:', rows);
+        
+        // Even if no courses found, return empty array (not an error)
+        const cursoIds = rows.map(row => row.Curso_ID);
+        console.log('IDs dos cursos encontrados:', cursoIds);
+        
+        return res.json(cursoIds);
     } catch (error) {
-        console.error('Erro completo:', error);
+        console.error('Erro ao buscar cursos:', error);
+        return res.status(500).json({ 
+            error: 'Erro ao buscar cursos de interesse',
+            details: error.message 
+        });
+    }
+};
+
+
+const getAllCursos = async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT ID as curso_id, Nome as curso_nome FROM Curso');
+        res.json(rows);
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
+
 
 module.exports = {
     createEmpresaCurso,
@@ -167,4 +189,6 @@ module.exports = {
     deleteEmpresaCurso,
     updateCursosInteresseEmpresa,
     getCursosInteresseEmpresa,
+    getAllCursos,
 };
+

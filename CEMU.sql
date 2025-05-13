@@ -79,20 +79,16 @@ CREATE TABLE FeedbackEstagio (
     FOREIGN KEY (Empresa_ID) REFERENCES Empresa (ID) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (Estagio_ID, Estudante_ID)
 );
-
 ALTER TABLE Curso 
 CHANGE COLUMN Faculdade_ID Faculdade_ID INT UNSIGNED,
 ADD FOREIGN KEY (Faculdade_ID) REFERENCES Faculdade(ID) ON DELETE CASCADE ON UPDATE CASCADE;
-
-
 CREATE INDEX idx_faculdade_nome ON Faculdade(Nome);
 CREATE INDEX idx_curso_nome ON Curso(Nome);
 CREATE INDEX idx_empresa_provincia ON Empresa(Provincia);
-
 ALTER TABLE Estudante
 ADD COLUMN Sexo TINYINT(1)() DEFAULT NULL
 AFTER Sobrenome;
-
 ALTER TABLE Estudante
 ADD COLUMN Sexo CHAR(1) NOT NULL COMMENT 'M = Masculino, F = Feminino';
- 
+-- Recrie a tabela Empresa_Curso com tipos UNSIGNED
+SELECT * FROM users;

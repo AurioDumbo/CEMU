@@ -31,8 +31,7 @@
     "mysql2": "^3.14.0",
     "node-cron": "^3.0.3",
     "npm": "^11.2.0",
-    "pdfkit": "^0.16.0",
-    "sequelize": "^6.37.7"
+    "pdfkit": "^0.16.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.4.1",
