@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const db = require('./config/db');
-const sequelize = require('./config/database');
 const { Estudante, updateEstudanteEstado } = require('./models/estudante');
 const cron = require('node-cron');
 const http = require('http');
@@ -21,16 +20,11 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const provinciasRoutes = require("./routes/provincias.routes");
 const authRoutes = require('./routes/authRoutes');
 
-
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-sequelize.sync()
-    .then(() => console.log('Banco de dados sincronizado'))
-    .catch((err) => console.error('Erro ao sincronizar o banco de dados:', err));
 
 (async () => {
     try {
@@ -67,6 +61,11 @@ app.use('/api/provincias', provinciasRoutes);
 app.get('/api/mensagem',(req, res) => {
     res.json({mensagem: 'Backend rodando'})
 })
+
+app.use((err, req, res, next) => {
+    console.error('ERRO GLOBAL:', err);
+    res.status(500).json({ error: 'Erro interno do servidor (global)' });
+});
 
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });

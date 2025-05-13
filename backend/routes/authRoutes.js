@@ -2,15 +2,16 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
+const bcrypt = require('bcrypt');
 
 // Rota de login
 router.post('/login', async (req, res) => {
-  const { email, senha } = req.body;
+  const { email, password } = req.body;
 
   try {
     const [rows] = await db.query(
-      'SELECT * FROM Usuario WHERE email = ? AND senha = ?',
-      [email, senha]
+      'SELECT * FROM users WHERE email = ?',
+      [email]
     );
 
     if (rows.length === 0) {
@@ -18,6 +19,15 @@ router.post('/login', async (req, res) => {
     }
 
     const user = rows[0];
+    if (!user) {
+      return res.status(401).json({ error: 'Credenciais inválidas' });
+    }
+    const senhaCorreta = await bcrypt.compare(password, user.password);
+    if (!senhaCorreta) {
+      return res.status(401).json({ error: 'Credenciais inválidas' });
+    }
+
+
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET,

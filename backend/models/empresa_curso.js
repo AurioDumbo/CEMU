@@ -1,32 +1,27 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const db = require('../config/db');
 
-const EmpresaCurso = sequelize.define('Empresa_Curso', {
-  Empresa_ID: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false,
-    primaryKey: true,
-    references: {
-      model: 'Empresa',
-      key: 'ID'
-    },
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-  },
-  Curso_ID: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false,
-    primaryKey: true,
-    references: {
-      model: 'Curso',
-      key: 'ID'
-    },
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-  }
-}, {
-  tableName: 'Empresa_Curso',
-  timestamps: false
-});
+class EmpresaCurso {
+    static async getCursosInteresseEmpresa(empresaId) {
+        try {
+            // Converte para número e valida
+            const id = parseInt(empresaId);
+            if (isNaN(id)) throw new Error('ID inválido');
 
-module.exports = EmpresaCurso; 
+            const [rows] = await db.execute(`
+                SELECT 
+                    ec.Curso_ID,
+                    c.Nome as curso_nome
+                FROM Empresa_Curso ec
+                INNER JOIN Curso c ON ec.Curso_ID = c.ID
+                WHERE ec.Empresa_ID = ?
+            `, [id]);
+            
+            return rows;
+        } catch (error) {
+            console.error('Erro ao buscar cursos:', error);
+            throw error;
+        }
+    }
+}
+
+module.exports = EmpresaCurso;

@@ -11,6 +11,22 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
+// Add this after pool creation
+pool.on('error', (err) => {
+    console.error('Database pool error:', err);
+});
+
+// Add this to your execute wrapper
+const execute = async (...args) => {
+    try {
+        const result = await pool.execute(...args);
+        return result;
+    } catch (error) {
+        console.error('Database execute error:', error);
+        throw error;
+    }
+};
+
 // Função para inicializar o banco de dados
 async function initializeDatabase() {
     try {
@@ -51,6 +67,30 @@ async function initializeDatabase() {
                 Provincia VARCHAR(255) NOT NULL,
                 FOREIGN KEY (Curso_ID) REFERENCES Curso(ID),
                 FOREIGN KEY (Faculdade_ID) REFERENCES Faculdade(ID)
+            )
+        `);
+
+        // Criar tabela de Empresa
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS Empresa (
+                ID INT AUTO_INCREMENT PRIMARY KEY,
+                NIF VARCHAR(50) NOT NULL UNIQUE,
+                Nome VARCHAR(255) NOT NULL,
+                Provincia VARCHAR(255),
+                Telefone VARCHAR(20) UNIQUE,
+                Email VARCHAR(255) UNIQUE,
+                Status ENUM('Ativo', 'Pendente', 'Inativo') DEFAULT 'Ativo'
+            )
+        `);
+
+        // Criar tabela de Empresa_Curso
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS Empresa_Curso (
+                Empresa_ID INT,
+                Curso_ID INT,
+                PRIMARY KEY (Empresa_ID, Curso_ID),
+                FOREIGN KEY (Empresa_ID) REFERENCES Empresa(ID) ON DELETE CASCADE,
+                FOREIGN KEY (Curso_ID) REFERENCES Curso(ID) ON DELETE CASCADE
             )
         `);
 

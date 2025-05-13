@@ -13,7 +13,9 @@ async function createEmpresa(req, res) {
         const sql = 'INSERT INTO Empresa (NIF, Nome, Provincia, Telefone, Email, Status) VALUES (?, ?, ?, ?, ?, ?)';
         const [result] = await db.execute(sql, [NIF, Nome, Provincia, Telefone || null, Email || null, Status]);
         res.status(201).json({ message: 'Empresa criada com sucesso!', id: result.insertId });
+        console.log('RESPOSTA ENVIADA');
     } catch (error) {
+        console.error('ERRO DETALHADO:', error, error.stack);
         res.status(500).json({ error: error.message });
     }
 }
@@ -33,8 +35,9 @@ async function getAllEmpresas(req, res) {
             FROM Empresa
         `);
         res.json(rows);
+        console.log('RESPOSTA ENVIADA');
     } catch (error) {
-        console.error('Erro ao buscar empresas:', error);
+        console.error('ERRO DETALHADO:', error, error.stack);
         res.status(500).json({ error: error.message });
     }
 }
@@ -58,7 +61,9 @@ async function getEmpresaById(req, res) {
             return res.status(404).json({ message: 'Empresa não encontrada' });
         }
         res.json(rows[0]);
+        console.log('RESPOSTA ENVIADA');
     } catch (error) {
+        console.error('ERRO DETALHADO:', error, error.stack);
         res.status(500).json({ error: error.message });
     }
 }
@@ -81,7 +86,9 @@ async function updateEmpresa(req, res) {
         }
 
         res.json({ message: 'Empresa atualizada com sucesso!' });
+        console.log('RESPOSTA ENVIADA');
     } catch (error) {
+        console.error('ERRO DETALHADO:', error, error.stack);
         res.status(500).json({ error: error.message });
     }
 }
@@ -106,7 +113,9 @@ async function deleteEmpresa(req, res) {
         }
 
         res.json({ message: 'Empresa removida com sucesso!' });
+        console.log('RESPOSTA ENVIADA');
     } catch (error) {
+        console.error('ERRO DETALHADO:', error, error.stack);
         res.status(500).json({ error: error.message });
     }
 }
@@ -121,9 +130,11 @@ async function getEmpresasPorCurso(req, res) {
             INNER JOIN Empresa_Curso ec ON e.ID = ec.Empresa_ID
             WHERE ec.Curso_ID = ? AND e.Status = 'Ativo'
         `, [cursoId]);
+        console.log('Cursos encontrados:', rows);
         res.json(rows);
+        console.log('RESPOSTA ENVIADA');
     } catch (error) {
-        console.error('Erro ao buscar empresas por curso:', error);
+        console.error('ERRO DETALHADO:', error, error.stack);
         res.status(500).json({ error: error.message });
     }
 }

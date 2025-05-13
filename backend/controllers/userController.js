@@ -7,15 +7,15 @@ const register = async (req, res) => {
     const { email, password, role } = req.body;
 
     try {
-        const existingUser = await User.findOne({ where: { email } });
+        const existingUser = await User.findByEmail(email);
         if (existingUser) {
             return res.status(400).json({ message: 'E-mail já está em uso' });
         }
 
         const hashedPassword = await hash(password, 10);
-        const newUser = await User.create({ email, password: hashedPassword, role: role || 3 });
+        const userId = await User.create({ email, password: hashedPassword, role: role || 3 });
 
-        res.status(201).json({ message: 'Usuário registrado com sucesso', user: newUser });
+        res.status(201).json({ message: 'Usuário registrado com sucesso', user: { id: userId, email, role: role || 3 } });
     } catch (error) {
         console.error('Erro ao registrar usuário:', error);
         res.status(500).json({ message: 'Erro ao registrar usuário', error: error.message });
@@ -26,7 +26,7 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ where: { email } });
+        const user = await User.findByEmail(email);
         if (!user) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
@@ -42,7 +42,7 @@ const login = async (req, res) => {
 
         res.json({ token, role: user.role });
     } catch (error) {
-        res.status(500).json({ message: 'Erro no servidor', error });
+        res.status(500).json({ message: 'Erro no servidor', error: error.message });
     }
 };
 
@@ -58,21 +58,25 @@ const updateUser = async (req, res) => {
     const { email, role } = req.body;
 
     try {
-        const user = await User.findByPk(id);
+        const user = await User.findById(id);
         if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
         // Verificar se o email já existe para outro usuário
         if (email !== user.email) {
-            const existingUser = await User.findOne({ where: { email } });
+            const existingUser = await User.findByEmail(email);
             if (existingUser) {
                 return res.status(400).json({ message: 'E-mail já está em uso' });
             }
         }
 
-        await user.update({ email, role });
-        res.json({ message: 'Usuário atualizado com sucesso', user });
+        // Atualizar usuário
+        await require('../config/db').execute(
+            'UPDATE users SET email = ?, role = ? WHERE id = ?',
+            [email, role, id]
+        );
+        res.json({ message: 'Usuário atualizado com sucesso', user: { id, email, role } });
     } catch (error) {
         console.error('Erro ao atualizar usuário:', error);
         res.status(500).json({ message: 'Erro ao atualizar usuário', error: error.message });
@@ -83,12 +87,12 @@ const deleteUser = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const user = await User.findByPk(id);
+        const user = await User.findById(id);
         if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
-        await user.destroy();
+        await require('../config/db').execute('DELETE FROM users WHERE id = ?', [id]);
         res.json({ message: 'Usuário excluído com sucesso' });
     } catch (error) {
         console.error('Erro ao excluir usuário:', error);

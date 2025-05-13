@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const db = require('../config/db');
 
 const Curso = sequelize.define('Curso', {
   Nome: {

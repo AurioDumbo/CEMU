@@ -1,19 +1,17 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const db = require('../config/db');
 
-const LoginLog = sequelize.define('LoginLog', {
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  loginAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW,
-  }
-}, {
-  tableName: 'login_logs',
-  timestamps: false,
-});
+class LoginLog {
+    static async create({ email, loginAt = new Date() }) {
+        await db.execute(
+            'INSERT INTO login_logs (email, loginAt) VALUES (?, ?)',
+            [email, loginAt]
+        );
+    }
+
+    static async findAll() {
+        const [rows] = await db.execute('SELECT * FROM login_logs');
+        return rows;
+    }
+}
 
 module.exports = LoginLog;

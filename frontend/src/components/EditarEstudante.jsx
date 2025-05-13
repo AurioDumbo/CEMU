@@ -190,6 +190,7 @@ export default function EditarEstudante() {
               onChange={handleChange}
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              disabled={formData.status === 'Ativo'} 
             >
               <option value="">Selecione a faculdade</option>
               {faculdades.map(fac => (
@@ -204,7 +205,7 @@ export default function EditarEstudante() {
               value={formData.Curso_ID}
               onChange={handleChange}
               required
-              disabled={!formData.Faculdade_ID}
+              disabled={!formData.Faculdade_ID || formData.status === 'Ativo'} 
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
             >
               <option value="">Selecione o curso</option>
