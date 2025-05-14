@@ -2,6 +2,7 @@ const { sign } = require('jsonwebtoken');
 const { hash, compare } = require('bcrypt');
 const User = require('../models/user');
 const LoginLog = require('../models/LoginLog');
+const db = require('../config/db');
 
 const register = async (req, res) => {
     const { email, password, role } = req.body;
@@ -38,7 +39,8 @@ const login = async (req, res) => {
 
         const token = sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        await LoginLog.create({ email: user.email });
+
+        await LoginLog.create({ userId: user.id });
 
         res.json({ token, role: user.role });
     } catch (error) {
@@ -100,4 +102,13 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = { register, login, isAdmin, updateUser, deleteUser };
+const listarUsuarios = async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT id, email, role FROM users');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar usuários' });
+    }
+};
+
+module.exports = { register, login, isAdmin, updateUser, deleteUser, listarUsuarios };

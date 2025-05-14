@@ -2,229 +2,204 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { FaEnvelope, FaUserCog, FaLock, FaSignOutAlt } from 'react-icons/fa';
+import { FaEnvelope, FaUserCog, FaClock, FaCalendarAlt, FaKey, FaSignOutAlt } from 'react-icons/fa';
 
 export default function Perfil() {
-  const navigate = useNavigate();
-  const [userData, setUserData] = useState({
-    email: '',
-    role: '',
-    ultimoAcesso: '',
-    dataCriacao: '',
-    status: ''
-  });
-  const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+    const navigate = useNavigate();
+    const [userData, setUserData] = useState({
+        email: '',
+        role: '',
+        ultimoAcesso: null,
+        dataCriacao: null
+    });
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [passwords, setPasswords] = useState({
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const token = sessionStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+    useEffect(() => {
+        fetchUserData();
+    }, []);
 
     const fetchUserData = async () => {
-      try {
-        const response = await axios.get('http://localhost:5001/api/usuarios/perfil', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (response.data) {
-          setUserData(response.data);
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
         }
-      } catch (error) {
-        console.error('Erro ao carregar dados do usuário:', error);
-        if (error.response?.status === 401) {
-          toast.error('Sessão expirada. Por favor, faça login novamente.');
-          sessionStorage.removeItem('token');
-          navigate('/login');
-        } else {
-          toast.error('Erro ao carregar dados do perfil');
+
+        try {
+            const response = await axios.get('http://localhost:5001/api/usuarios/perfil', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setUserData(response.data);
+        } catch (error) {
+            console.error('Erro ao carregar dados:', error);
+            if (error.response?.status === 401) {
+                sessionStorage.removeItem('token');
+                navigate('/login');
+            }
+            toast.error('Erro ao carregar dados do perfil');
+        } finally {
+            setLoading(false);
         }
-      } finally {
-        setLoading(false);
-      }
     };
 
-    fetchUserData();
-  }, [navigate]);
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        if (passwords.newPassword !== passwords.confirmPassword) {
+            toast.error('As senhas não coincidem');
+            return;
+        }
 
-  const handlePasswordChange = async (e) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      toast.error('As senhas não coincidem');
-      return;
-    }
+        try {
+            const token = sessionStorage.getItem('token');
+            await axios.put(
+                'http://localhost:5001/api/usuarios/alterar-senha',
+                { novaSenha: passwords.newPassword },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast.success('Senha alterada com sucesso!');
+            setIsChangingPassword(false);
+            setPasswords({ newPassword: '', confirmPassword: '' });
+        } catch (error) {
+            console.error(error);
+            toast.error('Erro ao alterar senha');
+        }
+    };
 
-    const token = sessionStorage.getItem('token');
-    if (!token) {
-      toast.error('Sessão expirada. Por favor, faça login novamente.');
-      navigate('/login');
-      return;
-    }
-
-    try {
-      await axios.put('http://localhost:5001/api/usuarios/alterar-senha',
-        { novaSenha: newPassword },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      toast.success('Senha alterada com sucesso!');
-      setNewPassword('');
-      setConfirmPassword('');
-      setEditMode(false);
-    } catch (error) {
-      if (error.response?.status === 401) {
-        toast.error('Sessão expirada. Por favor, faça login novamente.');
+    const handleLogout = () => {
         sessionStorage.removeItem('token');
+        toast.success('Logout realizado!');
         navigate('/login');
-      } else {
-        toast.error('Erro ao alterar senha');
-      }
+    };
+
+    const getRoleName = (role) => {
+        const roles = {
+            1: 'Administrador',
+            2: 'Gestor',
+            3: 'Usuário'
+        };
+        return roles[role] || 'Não definido';
+    };
+
+    const formatDate = (date) => {
+        if (!date) return 'Não disponível';
+        // Corrige formato MySQL para Date JS
+        return new Date(date.replace(' ', 'T')).toLocaleString('pt-BR');
+    };
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-screen">Carregando...</div>;
     }
-  };
 
-  const handleLogout = () => {
-    sessionStorage.clear();
-    navigate('/login');
-    toast.success('Sessão encerrada com sucesso');
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Não disponível';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Data inválida';
-      return date.toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return 'Data inválida';
-    }
-  };
-
-  if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg">Carregando...</div>
-      </div>
+        <div className="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Perfil do Usuário</h2>
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                    <FaSignOutAlt className="mr-2" />
+                    Logout
+                </button>
+            </div>
+            <div className="space-y-6">
+                {/* Informações do Usuário */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
+                        <FaEnvelope className="text-blue-600 text-xl" />
+                        <div>
+                            <p className="text-sm text-gray-500">Email</p>
+                            <p className="font-medium">{userData.email}</p>
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
+                        <FaUserCog className="text-blue-600 text-xl" />
+                        <div>
+                            <p className="text-sm text-gray-500">Tipo de Usuário</p>
+                            <p className="font-medium">{getRoleName(userData.role)}</p>
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
+                        <FaClock className="text-blue-600 text-xl" />
+                        <div>
+                            <p className="text-sm text-gray-500">Último Acesso</p>
+                            <p className="font-medium">{formatDate(userData.ultimoAcesso)}</p>
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
+                        <FaCalendarAlt className="text-blue-600 text-xl" />
+                        <div>
+                            <p className="text-sm text-gray-500">Conta Criada em</p>
+                            <p className="font-medium">{formatDate(userData.dataCriacao)}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Botão Alterar Senha */}
+                <div className="mt-6">
+                    <button
+                        onClick={() => setIsChangingPassword(!isChangingPassword)}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        <FaKey className="mr-2" />
+                        {isChangingPassword ? 'Cancelar' : 'Alterar Senha'}
+                    </button>
+                </div>
+
+                {/* Formulário de Alteração de Senha */}
+                {isChangingPassword && (
+                    <form onSubmit={handlePasswordChange} className="mt-6 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Nova Senha
+                                </label>
+                                <input
+                                    type="password"
+                                    value={passwords.newPassword}
+                                    onChange={(e) => setPasswords({
+                                        ...passwords,
+                                        newPassword: e.target.value
+                                    })}
+                                    className="w-full p-2 border rounded-md"
+                                    required
+                                    minLength={6}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Confirmar Senha
+                                </label>
+                                <input
+                                    type="password"
+                                    value={passwords.confirmPassword}
+                                    onChange={(e) => setPasswords({
+                                        ...passwords,
+                                        confirmPassword: e.target.value
+                                    })}
+                                    className="w-full p-2 border rounded-md"
+                                    required
+                                    minLength={6}
+                                />
+                            </div>
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full md:w-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        >
+                            Salvar Nova Senha
+                        </button>
+                    </form>
+                )}
+            </div>
+        </div>
     );
-  }
-
-  const getRoleName = (role) => {
-    switch (role) {
-      case '1':
-        return 'Administrador';
-      case '2':
-        return 'Usuário';
-      default:
-        return 'Não definido';
-    }
-  };
-
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">Perfil do Usuário</h1>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setEditMode(!editMode)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
-            >
-              {editMode ? 'Cancelar Edição' : 'Alterar Senha'}
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200 flex items-center gap-2"
-            >
-              <FaSignOutAlt />
-              Sair
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6">
-          <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-            <FaEnvelope className="text-2xl text-blue-600 min-w-[2rem]" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="text-lg font-medium">{userData.email}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-            <FaUserCog className="text-2xl text-blue-600 min-w-[2rem]" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-500">Nível de Acesso</p>
-              <p className="text-lg font-medium">{getRoleName(userData.role)}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-            <FaLock className="text-2xl text-blue-600 min-w-[2rem]" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-500">Último Acesso</p>
-              <p className="text-lg font-medium">{formatDate(userData.ultimoAcesso)}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-            <FaLock className="text-2xl text-blue-600 min-w-[2rem]" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-500">Conta Criada em</p>
-              <p className="text-lg font-medium">{formatDate(userData.dataCriacao)}</p>
-            </div>
-          </div>
-        </div>
-
-        {editMode && (
-          <form onSubmit={handlePasswordChange} className="mt-8 space-y-6 border-t pt-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Alterar Senha</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nova Senha
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  minLength={6}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirmar Nova Senha
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200"
-              >
-                Salvar Nova Senha
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
-  );
 }

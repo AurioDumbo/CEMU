@@ -3,6 +3,7 @@ const { register, login, updateUser, deleteUser } = require('../controllers/user
 const authenticateToken = require('../middlewares/authMiddleware');
 const User = require('../models/user');
 const LoginLog = require('../models/LoginLog');
+const userController = require('../controllers/userController');
 
 const router = express.Router();
 
@@ -20,16 +21,7 @@ router.post('/bootstrap-admin', async (req, res) => {
     res.json({ message: 'Admin criado', user });
   });
 
-router.get('/', authenticateToken, async (req, res) => {
-  try {
-    const users = await User.findAll({
-      attributes: ['id', 'email', 'role']
-    });
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: 'Erro ao buscar usuários' });
-  }
-});
+router.get('/', authenticateToken, userController.listarUsuarios);
 
 router.get('/login-logs', authenticateToken, async (req, res) => {
   try {
