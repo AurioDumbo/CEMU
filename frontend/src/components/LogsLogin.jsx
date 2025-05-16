@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { toast } from 'react-hot-toast';
 
 export default function LogsLogin() {
   const navigate = useNavigate();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Estados para filtros e paginação
   const [filters, setFilters] = useState({
     role: '',
@@ -21,9 +21,7 @@ export default function LogsLogin() {
   // Buscar logs com filtros e paginação
   const fetchLogs = async () => {
     try {
-      const token = sessionStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/usuarios/login-logs', {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get('http://localhost:5001/api/usuarios/login-logs', {
         params: {
           role: filters.role,
           startDate: filters.startDate,
@@ -32,7 +30,7 @@ export default function LogsLogin() {
           limit: itemsPerPage
         }
       });
-      
+
       setLogs(response.data.logs);
       setTotalPages(Math.ceil(response.data.total / itemsPerPage));
     } catch (error) {
@@ -45,6 +43,7 @@ export default function LogsLogin() {
 
   useEffect(() => {
     fetchLogs();
+    // eslint-disable-next-line
   }, [currentPage, filters]);
 
   // Handler para filtros
@@ -67,11 +66,11 @@ export default function LogsLogin() {
       >
         Anterior
       </button>
-      
+
       <span className="px-4 py-1 rounded bg-gray-100">
         Página {currentPage} de {totalPages}
       </span>
-      
+
       <button
         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
         disabled={currentPage === totalPages}
@@ -123,7 +122,7 @@ export default function LogsLogin() {
               <option value="3">Leitor</option>
             </select>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Data Inicial
@@ -136,7 +135,7 @@ export default function LogsLogin() {
               className="w-full p-2 border rounded-lg"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Data Final

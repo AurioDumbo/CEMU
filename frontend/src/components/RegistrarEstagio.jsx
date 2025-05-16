@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
+import axios from 'axios'; // para APIs externas
 import { toast } from 'react-toastify';
 import Select from 'react-select';
 
@@ -31,9 +32,9 @@ export default function RegistrarEstagio({ onSuccess }) {
     const fetchData = async () => {
       try {
         const [estRes, provRes, estagiosRes] = await Promise.all([
-          axios.get('http://localhost:5001/api/estudantes'),
+          api.get('http://localhost:5001/api/estudantes'),
           axios.get('https://angolaprovinciasapi.ggwp.com.br/api/v1/provincias'),
-          axios.get('http://localhost:5001/api/estagios')
+          api.get('http://localhost:5001/api/estagios')
         ]);
         // Filtra estudantes que não têm estágios ativos
         const estudantesComEstagio = new Set(estagiosRes.data.map(estagio => estagio.Estudante_ID));
@@ -64,7 +65,7 @@ export default function RegistrarEstagio({ onSuccess }) {
         return;
       }
       try {
-        const res = await axios.get(`http://localhost:5001/api/empresas/por-curso/${cursoId}`);
+        const res = await api.get(`http://localhost:5001/api/empresas/por-curso/${cursoId}`);
         console.log('Empresas retornadas:', res.data);
         setEmpresas(res.data);
       } catch {
@@ -178,7 +179,7 @@ export default function RegistrarEstagio({ onSuccess }) {
     });
 
     try {
-      await axios.post('http://localhost:5001/api/estagios', payload);
+      await api.post('http://localhost:5001/api/estagios', payload);
       setFormData({
         Estudante_ID: '',
         Empresa_ID: '',
@@ -197,7 +198,7 @@ export default function RegistrarEstagio({ onSuccess }) {
       });
       if (onSuccess) onSuccess(); // Chama o modal de sucesso do pai
     } catch {
-      // ...tratamento de erro...
+      toast.error('Erro ao registrar estágio. Tente novamente.');
     }
   };
 

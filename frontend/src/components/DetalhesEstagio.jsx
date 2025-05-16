@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance'; // Troque axios por api
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
@@ -13,7 +13,7 @@ export default function DetalhesEstagio() {
   useEffect(() => {
     const fetchEstagio = async () => {
       try {
-        const response = await axios.get(`http://localhost:5001/api/estagios/${id}`);
+        const response = await api.get(`http://localhost:5001/api/estagios/${id}`);
         setEstagio(response.data);
       } catch (error) {
         console.error('Erro ao carregar detalhes do estágio:', error);
@@ -218,4 +218,4 @@ export default function DetalhesEstagio() {
       </div>
     </div>
   );
-} 
+}

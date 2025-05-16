@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import api from '../utils/axiosInstance';
 
 export default function AdicionarCurso() {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function AdicionarCurso() {
     const fetchFaculdades = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        const response = await axios.get('http://localhost:5001/api/faculdade', {
+        const response = await api.get('http://localhost:5001/api/faculdade', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setFaculdades(response.data);
@@ -40,7 +40,7 @@ export default function AdicionarCurso() {
 
     try {
       const token = sessionStorage.getItem('token');
-      await axios.post(
+      await api.post(
         'http://localhost:5001/api/curso',
         {
           Nome: formData.nome,
@@ -124,4 +124,4 @@ export default function AdicionarCurso() {
       </div>
     </div>
   );
-} 
+}

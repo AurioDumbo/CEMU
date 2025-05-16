@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -22,21 +22,15 @@ const RegistrarEstudante = ({ onSuccess }) => {
     const fetchData = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        
         if (!token) {
           navigate('/login');
           return;
         }
 
         const [cursosResponse, faculdadesResponse] = await Promise.all([
-          axios.get('http://localhost:5001/api/curso', {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get('http://localhost:5001/api/faculdade', {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          api.get('http://localhost:5001/api/curso'),
+          api.get('http://localhost:5001/api/faculdade')
         ]);
-        
         setCursos(cursosResponse.data);
         setFaculdades(faculdadesResponse.data);
       } catch (error) {
@@ -47,14 +41,12 @@ const RegistrarEstudante = ({ onSuccess }) => {
     fetchData();
   }, [navigate]);
 
-  // Efeito para filtrar cursos quando a faculdade é selecionada
   useEffect(() => {
     if (formData.Faculdade_ID) {
-      const cursosDaFaculdade = cursos.filter(curso => 
+      const cursosDaFaculdade = cursos.filter(curso =>
         curso.faculdade_id === parseInt(formData.Faculdade_ID)
       );
       setCursosFiltrados(cursosDaFaculdade);
-      // Limpa o curso selecionado quando muda a faculdade
       setFormData(prev => ({ ...prev, Curso_ID: '' }));
     } else {
       setCursosFiltrados([]);
@@ -72,13 +64,11 @@ const RegistrarEstudante = ({ onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validação do número de telemóvel
     if (formData.Telefone && formData.Telefone.length !== 9) {
       toast.error('Número de telemóvel inválido. Deve conter exatamente 9 dígitos.');
       return;
     }
 
-    // Validação do email
     if (formData.Email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.Email)) {
       toast.error('Email inválido. Por favor, insira um email válido.');
       return;
@@ -89,9 +79,7 @@ const RegistrarEstudante = ({ onSuccess }) => {
         ...formData,
         Estado: 'Pendente'
       };
-      const response = await axios.post('http://localhost:5001/api/estudantes', dataToSend, {
-        headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
-      });
+      const response = await api.post('http://localhost:5001/api/estudantes', dataToSend);
 
       if (response.status === 201) {
         setFormData({

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { toast } from 'react-hot-toast';
 
 export default function EditarCurso() {
@@ -23,10 +23,10 @@ export default function EditarCurso() {
         }
 
         const [cursoResponse, faculdadesResponse] = await Promise.all([
-          axios.get(`http://localhost:5001/api/curso/${id}`, {
+          api.get(`http://localhost:5001/api/curso/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get('http://localhost:5001/api/faculdade', {
+          api.get('http://localhost:5001/api/faculdade', {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -56,7 +56,7 @@ export default function EditarCurso() {
         return;
       }
 
-      await axios.put(
+      await api.put(
         `http://localhost:5001/api/curso/${id}`,
         {
           Nome: formData.nome,
@@ -140,4 +140,4 @@ export default function EditarCurso() {
       </div>
     </div>
   );
-} 
+}

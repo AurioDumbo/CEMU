@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { toast } from 'react-hot-toast';
 import editIcon from '../assets/icons/edit.svg';
 import deleteIcon from '../assets/icons/delete.svg';
@@ -24,13 +24,9 @@ export default function UsuariosAdmin() {
   useEffect(() => {
     const fetchUsuarios = async () => {
       try {
-        const token = sessionStorage.getItem('token');
-        const res = await axios.get('http://localhost:5001/api/usuarios', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get('http://localhost:5001/api/usuarios');
         setUsuarios(res.data);
-        
-        // Se houver um ID na URL, carregar os dados do usuário para edição
+
         if (id) {
           const usuario = res.data.find(u => u.ID === parseInt(id));
           if (usuario) {
@@ -54,18 +50,11 @@ export default function UsuariosAdmin() {
   const HANDLE_SUBMIT = async (e) => {
     e.preventDefault();
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.post(
-        'http://localhost:5001/api/usuarios/register',
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post('http://localhost:5001/api/usuarios/register', formData);
       toast.success('Usuário criado com sucesso!');
       setFormData({ email: '', password: '', role: '3' });
       setLoading(true);
-      const res = await axios.get('http://localhost:5001/api/usuarios', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('http://localhost:5001/api/usuarios');
       setUsuarios(res.data);
       setLoading(false);
     } catch (error) {
@@ -75,14 +64,11 @@ export default function UsuariosAdmin() {
   };
 
   const handleEdit = (usuario) => {
-    console.log('Iniciando edição do usuário:', usuario);
-    console.log('Estado atual do editId:', editId);
     setEditId(usuario.id || usuario.ID);
     setEditData({
       email: usuario.email,
       role: String(usuario.role)
     });
-    console.log('Novo estado do editId:', usuario.id || usuario.ID);
   };
 
   const handleCancelEdit = () => {
@@ -93,60 +79,28 @@ export default function UsuariosAdmin() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const token = sessionStorage.getItem('token');
-      if (!token) {
-        toast.error('Token não encontrado. Faça login novamente.');
-        navigate('/login');
-        return;
-      }
-
       if (!editId) {
         toast.error('ID do usuário não encontrado');
         return;
       }
 
-      console.log('Dados para atualização:', {
-        id: editId,
-        email: editData.email,
-        role: editData.role
-      });
-
-      const response = await axios.put(
+      const response = await api.put(
         `http://localhost:5001/api/usuarios/${editId}`,
         {
           email: editData.email,
           role: editData.role
-        },
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } 
         }
       );
 
-      console.log('Resposta do servidor:', response.data);
-
       if (response.status === 200) {
         toast.success('Usuário atualizado com sucesso!');
-        
-        // Atualizar lista de usuários
-        const res = await axios.get('http://localhost:5001/api/usuarios', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get('http://localhost:5001/api/usuarios');
         setUsuarios(res.data);
-        
-        // Resetar estado de edição
         setEditId(null);
         setEditData({ email: '', role: '3' });
       }
     } catch (error) {
-      console.error('Erro na atualização:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
-      
+      console.error('Erro na atualização:', error);
       if (error.response?.status === 401) {
         toast.error('Sessão expirada. Faça login novamente.');
         navigate('/login');
@@ -161,15 +115,9 @@ export default function UsuariosAdmin() {
   const handleDelete = async (id) => {
     if (!window.confirm('Tem certeza que deseja excluir este usuário?')) return;
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.delete(`http://localhost:5001/api/usuarios/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`http://localhost:5001/api/usuarios/${id}`);
       toast.success('Usuário excluído com sucesso!');
-      // Atualizar lista de usuários após exclusão
-      const res = await axios.get('http://localhost:5001/api/usuarios', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('http://localhost:5001/api/usuarios');
       setUsuarios(res.data);
     } catch (error) {
       console.error('Erro ao excluir usuário:', error);

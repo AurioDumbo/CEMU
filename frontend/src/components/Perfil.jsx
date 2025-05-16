@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { toast } from 'react-hot-toast';
 import { FaEnvelope, FaUserCog, FaClock, FaCalendarAlt, FaKey, FaSignOutAlt } from 'react-icons/fa';
 
@@ -21,6 +21,7 @@ export default function Perfil() {
 
     useEffect(() => {
         fetchUserData();
+        // eslint-disable-next-line
     }, []);
 
     const fetchUserData = async () => {
@@ -31,9 +32,7 @@ export default function Perfil() {
         }
 
         try {
-            const response = await axios.get('http://localhost:5001/api/usuarios/perfil', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('http://localhost:5001/api/usuarios/perfil');
             setUserData(response.data);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
@@ -55,11 +54,9 @@ export default function Perfil() {
         }
 
         try {
-            const token = sessionStorage.getItem('token');
-            await axios.put(
+            await api.put(
                 'http://localhost:5001/api/usuarios/alterar-senha',
-                { novaSenha: passwords.newPassword },
-                { headers: { Authorization: `Bearer ${token}` } }
+                { novaSenha: passwords.newPassword }
             );
             toast.success('Senha alterada com sucesso!');
             setIsChangingPassword(false);
@@ -72,6 +69,8 @@ export default function Perfil() {
 
     const handleLogout = () => {
         sessionStorage.removeItem('token');
+        sessionStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('role');
         toast.success('Logout realizado!');
         navigate('/login');
     };
