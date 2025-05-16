@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Modal({ isOpen, onClose, title, message, type = 'success' }) {
+export default function Modal({ isOpen, onClose, title, message, type = 'success', onConfirm }) {
   if (!isOpen) return null;
 
   const getTypeStyles = () => {
@@ -59,18 +59,27 @@ export default function Modal({ isOpen, onClose, title, message, type = 'success
               {message}
             </p>
             
-            <div className="mt-5">
+            <div className="mt-5 flex gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${styles.buttonColor} focus:outline-none focus:ring-2 focus:ring-offset-2 sm:text-sm`}
+                className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:text-sm"
               >
-                OK
+                Cancelar
               </button>
+              {onConfirm && (
+                <button
+                  type="button"
+                  onClick={onConfirm}
+                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${styles.buttonColor} focus:outline-none focus:ring-2 focus:ring-offset-2 sm:text-sm`}
+                >
+                  Confirmar
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

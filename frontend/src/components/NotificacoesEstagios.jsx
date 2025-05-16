@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { io } from 'socket.io-client';
 
 export default function NotificacoesEstagios() {
@@ -8,10 +8,7 @@ export default function NotificacoesEstagios() {
   useEffect(() => {
     const fetchNotificacoes = async () => {
       try {
-        const token = sessionStorage.getItem('token');
-        const res = await axios.get('http://localhost:5001/api/estagios/notificacoes/proximos?dias=7', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get('http://localhost:5001/api/estagios/notificacoes/proximos?dias=7');
         setNotificacoes(res.data);
       } catch (err) {
         console.log(err);

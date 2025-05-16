@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 function Login() {
@@ -7,28 +7,40 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setSenha] = useState('');
   const [erro, setErro] = useState('');
- 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro('');
 
     try {
-      const res = await axios.post('http://localhost:5001/api/usuarios/login', { email, password });
-      const { token, role } = res.data;
-      
+        const res = await api.post('/api/usuarios/login', { email, password });
+        console.log('Resposta do login:', res.data);
 
-      sessionStorage.setItem('token', token);
-      sessionStorage.setItem('role', role);
-      
-      if (Number(role) === 1) {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
+        // Ajusta para usar 'token' ao invés de 'accessToken'
+        const { token, role } = res.data;
+
+        if (!token) {
+            throw new Error('Token não recebido do servidor');
+        }
+
+        // Salva token
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('role', role);
+
+        // Verifica se foram salvos
+        console.log('Tokens salvos:', {
+            token: sessionStorage.getItem('token'),
+            role: sessionStorage.getItem('role')
+        });
+
+        if (Number(role) === 1) {
+            navigate('/admin', { replace: true });
+        } else {
+            navigate('/dashboard', { replace: true });
+        }
     } catch (err) {
-      setErro('Erro de login! Verifique suas credenciais.');
-      console.error(err);
+        console.error('Erro completo:', err);
+        setErro('Erro de login! Verifique suas credenciais.');
     }
   };
 

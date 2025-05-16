@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
+import axios from 'axios'; // para APIs externas
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,17 +24,8 @@ export default function RegistrarEmpresa({ onSuccess }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = sessionStorage.getItem('token');
-        if (!token) {
-          console.error('Token não encontrado');
-          navigate('/login');
-          return;
-        }
-
         const [cursosResponse, provinciasResponse] = await Promise.all([
-          axios.get('http://localhost:5001/api/curso', {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
+          api.get('http://localhost:5001/api/curso'),
           axios.get('https://angolaprovinciasapi.ggwp.com.br/api/v1/provincias')
         ]);
         setCursos(cursosResponse.data);
@@ -50,7 +42,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -108,13 +100,6 @@ export default function RegistrarEmpresa({ onSuccess }) {
     }
 
     try {
-      const token = sessionStorage.getItem('token');
-      if (!token) {
-        toast.error('Sessão expirada. Por favor, faça login novamente.');
-        navigate('/login');
-        return;
-      }
-
       const empresaData = {
         NIF: formData.NIF,
         Nome: formData.Nome,
@@ -125,16 +110,12 @@ export default function RegistrarEmpresa({ onSuccess }) {
         Sede: formData.Sede
       };
 
-      const response = await axios.post('http://localhost:5001/api/empresas', empresaData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.post('http://localhost:5001/api/empresas', empresaData);
       const empresaId = response.data.id;
 
-      await axios.post('http://localhost:5001/api/empresa_curso', {
+      await api.post('http://localhost:5001/api/empresa_curso', {
         empresa_id: empresaId,
         cursos: cursosInteressados
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
 
       setFormData({

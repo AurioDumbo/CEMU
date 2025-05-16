@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import api from '../utils/axiosInstance';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -36,7 +37,7 @@ export default function EditarEstagio() {
 
   const fetchEstagio = async () => {
     try {
-      const res = await axios.get(`http://localhost:5001/api/estagios/${id}`);
+      const res = await api.get(`http://localhost:5001/api/estagios/${id}`);
       const estagio = res.data;
       setFormData({
         Estudante_ID: estagio.Estudante_ID || '',
@@ -62,12 +63,12 @@ export default function EditarEstagio() {
   };
 
   const fetchEstudantes = async () => {
-    const res = await axios.get('http://localhost:5001/api/estudantes');
+    const res = await api.get('http://localhost:5001/api/estudantes');
     setEstudantes(res.data);
   };
 
   const fetchEmpresas = async () => {
-    const res = await axios.get('http://localhost:5001/api/empresas');
+    const res = await api.get('http://localhost:5001/api/empresas');
     setEmpresas(res.data);
   };
 
@@ -94,7 +95,7 @@ export default function EditarEstagio() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:5001/api/estagios/${id}`, {
+      await api.put(`http://localhost:5001/api/estagios/${id}`, {
         Estudante_ID: parseInt(formData.Estudante_ID),
         Empresa_ID: parseInt(formData.Empresa_ID),
         Provincia: formData.Provincia,

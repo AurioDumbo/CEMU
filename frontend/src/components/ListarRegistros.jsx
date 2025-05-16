@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { toast } from 'react-hot-toast';
 import EditIcon from '../assets/icons/edit.svg?react';
 import DeleteIcon from '../assets/icons/delete.svg?react';
@@ -49,12 +49,8 @@ const ListarRegistros = () => {
 
         console.log('Iniciando requisições para API');
         const [estudantesRes, empresasRes] = await Promise.all([
-          axios.get('http://localhost:5001/api/estudantes', {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get('http://localhost:5001/api/empresas', {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          api.get('http://localhost:5001/api/estudantes'),
+          api.get('http://localhost:5001/api/empresas')
         ]);
 
         // Processar os dados dos estudantes para garantir que faculdade e curso estejam corretos
@@ -98,12 +94,8 @@ const ListarRegistros = () => {
       }
 
       const [estudantesRes, empresasRes] = await Promise.all([
-        axios.get('http://localhost:5001/api/estudantes', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5001/api/empresas', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        api.get('http://localhost:5001/api/estudantes'),
+        api.get('http://localhost:5001/api/empresas')
       ]);
 
       const estudantesProcessados = estudantesRes.data.map(estudante => ({
@@ -137,9 +129,7 @@ const ListarRegistros = () => {
         navigate('/login');
         return;
       }
-      await axios.delete(`http://localhost:5001/api/empresas/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`http://localhost:5001/api/empresas/${id}`);
       toast.success('Empresa excluída com sucesso');
       await atualizarDados();
     } catch (error) {
@@ -161,9 +151,7 @@ const ListarRegistros = () => {
         navigate('/login');
         return;
       }
-      await axios.delete(`http://localhost:5001/api/estudantes/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`http://localhost:5001/api/estudantes/${id}`);
       toast.success('Estudante excluído com sucesso');
       await atualizarDados();
     } catch (error) {

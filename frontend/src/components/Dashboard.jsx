@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import NotificacoesEstagios from './NotificacoesEstagios';
-import axios from 'axios';
+import api from '../utils/axiosInstance'; // Troque axios por api
 import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
@@ -14,7 +14,6 @@ import {
 } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-
 
 ChartJS.register(
   ArcElement,
@@ -51,15 +50,12 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-    
-        const dashboardResponse = await axios.get('http://localhost:5001/api/dashboard/data');
+
+        const dashboardResponse = await api.get('http://localhost:5001/api/dashboard/data');
         setDashboardData(dashboardResponse.data);
 
+        const provinciasResponse = await api.get('http://localhost:5001/api/dashboard/provincias');
 
-        const provinciasResponse = await axios.get('http://localhost:5001/api/dashboard/provincias');
-        
-      
         const provinciasOrdenadas = provinciasResponse.data.sort((a, b) => b.percentagem - a.percentagem);
         let labels = [];
         let data = [];
@@ -82,7 +78,6 @@ export default function Dashboard() {
         } else {
           labels = provinciasOrdenadas.map(item => item.Provincia);
           data = provinciasOrdenadas.map(item => item.percentagem);
-          // Ajusta as cores para a quantidade de províncias
           backgroundColor = backgroundColor.slice(0, provinciasOrdenadas.length);
         }
 
@@ -99,10 +94,8 @@ export default function Dashboard() {
         };
         setProvincesData(provinciasData);
 
-   
-        const empresasResponse = await axios.get('http://localhost:5001/api/dashboard/empresas');
+        const empresasResponse = await api.get('http://localhost:5001/api/dashboard/empresas');
         const empresasAtivas = empresasResponse.data
-       
           .sort((a, b) => b.total - a.total)
           .slice(0, 3);
 

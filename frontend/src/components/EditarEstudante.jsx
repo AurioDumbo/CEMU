@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { toast } from 'react-toastify';
 
 export default function EditarEstudante() {
@@ -13,7 +13,8 @@ export default function EditarEstudante() {
     Telefone: '',
     Email: '',
     Faculdade_ID: '',
-    Sexo: ''
+    Sexo: '',
+    status: ''
   });
   const [cursos, setCursos] = useState([]);
   const [cursosFiltrados, setCursosFiltrados] = useState([]);
@@ -21,7 +22,7 @@ export default function EditarEstudante() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Carrega cursos e faculdades primeiro, depois carrega o estudante
+
     const carregarDados = async () => {
       await fetchFaculdades();
       await fetchCursos();
@@ -29,16 +30,16 @@ export default function EditarEstudante() {
       setLoading(false);
     };
     carregarDados();
+
   }, []);
 
   useEffect(() => {
     if (formData.Faculdade_ID) {
-      const cursosDaFaculdade = cursos.filter(curso => 
+      const cursosDaFaculdade = cursos.filter(curso =>
         String(curso.faculdade_id) === String(formData.Faculdade_ID)
       );
       setCursosFiltrados(cursosDaFaculdade);
 
-      // Se o curso atual não está nos cursos filtrados, limpa o Curso_ID
       if (
         formData.Curso_ID &&
         !cursosDaFaculdade.some(c => String(c.curso_id) === String(formData.Curso_ID))
@@ -51,11 +52,12 @@ export default function EditarEstudante() {
         setFormData(prev => ({ ...prev, Curso_ID: '' }));
       }
     }
+
   }, [formData.Faculdade_ID, cursos]);
 
   const fetchEstudante = async () => {
     try {
-      const res = await axios.get(`http://localhost:5001/api/estudantes/${id}`);
+      const res = await api.get(`http://localhost:5001/api/estudantes/${id}`);
       const estudante = res.data;
       setFormData({
         Nome: estudante.nome || '',
@@ -64,7 +66,8 @@ export default function EditarEstudante() {
         Telefone: estudante.telefone || '',
         Email: estudante.email || '',
         Faculdade_ID: estudante.faculdade?.id || '',
-        Sexo: estudante.sexo || ''
+        Sexo: estudante.sexo || '',
+        status: estudante.status || ''
       });
     } catch (error) {
       console.error('Erro ao carregar estudante:', error);
@@ -75,18 +78,9 @@ export default function EditarEstudante() {
 
   const fetchCursos = async () => {
     try {
-      const token = sessionStorage.getItem('token');
-      const res = await axios.get('http://localhost:5001/api/curso', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      console.log('Cursos retornados:', res.data); // Para debug
+      const res = await api.get('http://localhost:5001/api/curso');
       setCursos(res.data);
-      if (formData.Faculdade_ID) {
-        const cursosDaFaculdade = res.data.filter(curso => 
-          String(curso.faculdade_id) === String(formData.Faculdade_ID)
-        );
-        setCursosFiltrados(cursosDaFaculdade);
-      }
+ 
     } catch (error) {
       console.error('Erro ao carregar cursos:', error);
       toast.error('Erro ao carregar cursos.');
@@ -95,10 +89,7 @@ export default function EditarEstudante() {
 
   const fetchFaculdades = async () => {
     try {
-      const token = sessionStorage.getItem('token');
-      const res = await axios.get('http://localhost:5001/api/faculdade', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('http://localhost:5001/api/faculdade');
       setFaculdades(res.data);
     } catch (error) {
       console.error('Erro ao carregar faculdades:', error);
@@ -125,12 +116,8 @@ export default function EditarEstudante() {
         Sexo: formData.Sexo,
         Estado: 'Pendente'
       };
-      
-      console.log('Dados enviados:', dadosParaEnviar);
-      
-      const response = await axios.put(`http://localhost:5001/api/estudantes/${id}`, dadosParaEnviar);
-      console.log('Resposta do servidor:', response.data);
-      
+
+      await api.put(`http://localhost:5001/api/estudantes/${id}`, dadosParaEnviar);
       toast.dismiss(toastId);
       toast.success('Estudante atualizado com sucesso!', {
         position: "top-right",
@@ -140,15 +127,14 @@ export default function EditarEstudante() {
         pauseOnHover: true,
         draggable: true
       });
-      
+
       setTimeout(() => {
         navigate('/registros');
       }, 1000);
-      
+
     } catch (error) {
       toast.dismiss(toastId);
       console.error('Erro ao atualizar:', error);
-      console.error('Detalhes do erro:', error.response?.data);
       toast.error(`Erro ao atualizar estudante: ${error.response?.data?.error || 'Erro desconhecido'}`);
     }
   };
@@ -261,7 +247,7 @@ export default function EditarEstudante() {
           </button>
           <button
             type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
           >
             Salvar
           </button>

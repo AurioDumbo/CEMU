@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { toast } from 'react-toastify';
 
 export default function EditarEmpresa() {
@@ -15,9 +15,8 @@ export default function EditarEmpresa() {
         Status: ''
     });
     const [provincias, setProvincias] = useState([]);
-    // Removed unused loading state
-    const [cursos, setCursos] = useState([]); // todos os cursos
-    const [cursosInteresse, setCursosInteresse] = useState([]); // IDs dos cursos de interesse
+    const [cursos, setCursos] = useState([]);
+    const [cursosInteresse, setCursosInteresse] = useState([]);
 
     useEffect(() => {
         const token = sessionStorage.getItem('token');
@@ -36,7 +35,7 @@ export default function EditarEmpresa() {
     const fetchEmpresa = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const res = await axios.get(`http://localhost:5001/api/empresas/${id}`, {
+            const res = await api.get(`http://localhost:5001/api/empresas/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (!res.data) {
@@ -53,7 +52,7 @@ export default function EditarEmpresa() {
     const fetchProvincias = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/provincias', {
+            const res = await api.get('http://localhost:5001/api/provincias', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setProvincias(res.data);
@@ -66,7 +65,7 @@ export default function EditarEmpresa() {
     const fetchCursos = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/curso', {
+            const res = await api.get('http://localhost:5001/api/curso', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCursos(res.data);
@@ -83,7 +82,7 @@ export default function EditarEmpresa() {
             const token = sessionStorage.getItem('token');
             console.log('Fetching cursos for empresa ID:', id); // Add this log
             
-            const res = await axios.get(
+            const res = await api.get(
                 `http://localhost:5001/api/empresa_curso/empresa/${id}`,
                 { 
                     headers: { 
@@ -112,10 +111,10 @@ export default function EditarEmpresa() {
         e.preventDefault();
         try {
             const token = sessionStorage.getItem('token');
-            await axios.put(`http://localhost:5001/api/empresas/${id}`, formData, {
+            await api.put(`http://localhost:5001/api/empresas/${id}`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            await axios.put(
+            await api.put(
                 `http://localhost:5001/api/empresa_curso/empresa/${id}`,
                 { cursos: cursosInteresse },
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -219,7 +218,7 @@ export default function EditarEmpresa() {
                     </button>
                     <button
                         type="submit"
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                     >
                         Salvar
                     </button>
@@ -231,6 +230,7 @@ export default function EditarEmpresa() {
                     {cursos.map(curso => (
                         <div key={curso.curso_id} className="flex items-center">
                             <input
+                               className='accent-red-600'
                                 type="checkbox"
                                 id={`curso-${curso.curso_id}`}
                                 value={curso.curso_id}

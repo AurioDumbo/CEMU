@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { toast } from 'react-hot-toast';
 import editIcon from '../assets/icons/edit.svg';
 import deleteIcon from '../assets/icons/delete.svg';
+import Modal from './Modal';
 
 export default function FaculdadesAdmin() {
   const navigate = useNavigate();
@@ -14,14 +15,12 @@ export default function FaculdadesAdmin() {
   });
   const [editId, setEditId] = useState(null);
   const [editNome, setEditNome] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, faculdadeId: null });
 
   useEffect(() => {
     const fetchFaculdades = async () => {
       try {
-        const token = sessionStorage.getItem('token');
-        const response = await axios.get('http://localhost:5001/api/faculdade', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('http://localhost:5001/api/faculdade');
         setFaculdades(response.data);
       } catch (error) {
         console.error('Erro ao carregar faculdades:', error);
@@ -40,18 +39,14 @@ export default function FaculdadesAdmin() {
       return;
     }
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.post(
+      await api.post(
         'http://localhost:5001/api/faculdade',
-        { Nome: formData.nome },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { Nome: formData.nome }
       );
       toast.success('Faculdade adicionada com sucesso!');
       setFormData({ nome: '' });
       setLoading(true);
-      const response = await axios.get('http://localhost:5001/api/faculdade', {
-        headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.get('http://localhost:5001/api/faculdade');
       setFaculdades(response.data);
       setLoading(false);
     } catch (error) {
@@ -72,19 +67,15 @@ export default function FaculdadesAdmin() {
       return;
     }
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.put(
+      await api.put(
         `http://localhost:5001/api/faculdade/${editId}`,
-        { Nome: editNome },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { Nome: editNome }
       );
       toast.success('Faculdade atualizada!');
       setEditId(null);
       setEditNome('');
       setLoading(true);
-      const response = await axios.get('http://localhost:5001/api/faculdade', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('http://localhost:5001/api/faculdade');
       setFaculdades(response.data);
       setLoading(false);
     } catch (error) {
@@ -93,23 +84,23 @@ export default function FaculdadesAdmin() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta faculdade?')) return;
+  const handleDelete = (id) => {
+    setDeleteModal({ isOpen: true, faculdadeId: id });
+  };
+
+  const confirmDelete = async () => {
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.delete(`http://localhost:5001/api/faculdade/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`http://localhost:5001/api/faculdade/${deleteModal.faculdadeId}`);
       toast.success('Faculdade excluída!');
       setLoading(true);
-      const response = await axios.get('http://localhost:5001/api/faculdade', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('http://localhost:5001/api/faculdade');
       setFaculdades(response.data);
-      setLoading(false);
     } catch (error) {
       console.error('Erro ao excluir faculdade:', error);
       toast.error('Erro ao excluir faculdade');
+    } finally {
+      setDeleteModal({ isOpen: false, faculdadeId: null });
+      setLoading(false);
     }
   };
 
@@ -128,7 +119,7 @@ export default function FaculdadesAdmin() {
           Gerenciar Faculdades
         </h1>
 
-        {/* Formulário de adicionar/editar */}
+    
         {editId ? (
           <form onSubmit={handleUpdate} className="space-y-6 mb-8">
             <div>
@@ -154,7 +145,7 @@ export default function FaculdadesAdmin() {
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 Salvar
               </button>
@@ -178,7 +169,7 @@ export default function FaculdadesAdmin() {
             <div className="flex gap-4 pt-4">
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 Adicionar Faculdade
               </button>
@@ -229,6 +220,14 @@ export default function FaculdadesAdmin() {
           </button>
         </div>
       </div>
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, faculdadeId: null })}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir esta faculdade? Esta ação não pode ser desfeita."
+        type="error"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

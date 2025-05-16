@@ -3,7 +3,7 @@ const router = express.Router();
 const faculdadeController = require('../controllers/faculdadeController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-// Rotas protegidas por autenticação
+
 router.get('/', authMiddleware, faculdadeController.getAllFaculdades);
 router.get('/:id', authMiddleware, faculdadeController.getFaculdadeById);
 router.post('/', authMiddleware, faculdadeController.createFaculdade);

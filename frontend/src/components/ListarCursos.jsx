@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { toast } from 'react-hot-toast';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
+import Modal from './Modal';
 
 const ListarCursos = () => {
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, cursoId: null });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,9 +20,7 @@ const ListarCursos = () => {
 
     const fetchCursos = async () => {
       try {
-        const response = await axios.get('http://localhost:5001/api/curso', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('http://localhost:5001/api/curso');
         setCursos(response.data);
         setLoading(false);
       } catch (error) {
@@ -33,21 +33,20 @@ const ListarCursos = () => {
     fetchCursos();
   }, [navigate]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este curso?')) {
-      return;
-    }
+  const handleDelete = (id) => {
+    setDeleteModal({ isOpen: true, cursoId: id });
+  };
 
-    const token = sessionStorage.getItem('token');
+  const confirmDelete = async () => {
     try {
-        await axios.delete(`http://localhost:5001/api/curso/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setCursos(cursos.filter(curso => curso.curso_id !== id));
+      await api.delete(`http://localhost:5001/api/curso/${deleteModal.cursoId}`);
+      setCursos(cursos.filter(curso => curso.curso_id !== deleteModal.cursoId));
       toast.success('Curso excluído com sucesso');
     } catch (error) {
       console.error('Erro ao excluir curso:', error);
       toast.error('Erro ao excluir o curso');
+    } finally {
+      setDeleteModal({ isOpen: false, cursoId: null });
     }
   };
 
@@ -76,7 +75,7 @@ const ListarCursos = () => {
         </div>
         <button
           onClick={() => navigate('/cursos/novo')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+          className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200"
         >
           <FaPlus /> Novo Curso
         </button>
@@ -115,8 +114,17 @@ const ListarCursos = () => {
           </tbody>
         </table>
       </div>
+      
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, cursoId: null })}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir este curso? Esta ação não pode ser desfeita."
+        type="error"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };
 
-export default ListarCursos; 
+export default ListarCursos;

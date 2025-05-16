@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import EditIcon from '../assets/icons/edit.svg?react';
 import DeleteIcon from '../assets/icons/delete.svg?react';
@@ -39,7 +39,7 @@ export default function ListarEstagios() {
   const fetchEstagios = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5001/api/estagios');
+      const response = await api.get('http://localhost:5001/api/estagios');
       setEstagios(response.data);
     } catch (error) {
       console.error('Erro ao carregar estágios:', error);
@@ -133,7 +133,7 @@ export default function ListarEstagios() {
     document.body.removeChild(link);
   };
 
-  // Calcular paginação
+  
   const totalPages = Math.ceil(filteredEstagios.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -151,9 +151,7 @@ export default function ListarEstagios() {
   const confirmDelete = async () => {
     try {
       await Promise.all(selectedIds.map(id => 
-        axios.delete(`http://localhost:5001/api/estagios/${id}`, {
-          headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
-        })
+        api.delete(`http://localhost:5001/api/estagios/${id}`)
       ));
       toast.success('Estágios excluídos com sucesso!');
       fetchEstagios();
