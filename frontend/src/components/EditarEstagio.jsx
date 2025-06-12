@@ -32,7 +32,7 @@ export default function EditarEstagio() {
     fetchEstudantes();
     fetchEmpresas();
     fetchProvincias();
-    // eslint-disable-next-line
+        
   }, []);
 
   const fetchEstagio = async () => {

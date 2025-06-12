@@ -65,7 +65,7 @@ const updateUser = async (req, res) => {
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
-        // Verificar se o email já existe para outro usuário
+
         if (email !== user.email) {
             const existingUser = await User.findByEmail(email);
             if (existingUser) {
@@ -73,7 +73,7 @@ const updateUser = async (req, res) => {
             }
         }
 
-        // Atualizar usuário
+       
         await require('../config/db').execute(
             'UPDATE users SET email = ?, role = ? WHERE id = ?',
             [email, role, id]
@@ -144,7 +144,7 @@ const perfilUsuario = async (req, res) => {
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
-        // Buscar último acesso na tabela de logs
+
         const [logs] = await db.execute(
             'SELECT login_at FROM login_logs WHERE user_id = ? ORDER BY login_at DESC LIMIT 1',
             [user.id]

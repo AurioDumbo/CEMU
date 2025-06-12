@@ -1,5 +1,5 @@
 const db = require('../config/db');
-// Removed unused 'EmpresaCurso' declaration
+
 
 const createEmpresaCurso = async (req, res) => {
     const { empresa_id, cursos } = req.body;
@@ -137,7 +137,6 @@ const getCursosInteresseEmpresa = async (req, res) => {
             return res.status(400).json({ error: 'ID da empresa inválido' });
         }
 
-        // First check if empresa exists
         const [empresa] = await db.execute(
             'SELECT ID FROM Empresa WHERE ID = ?',
             [id]
@@ -147,7 +146,7 @@ const getCursosInteresseEmpresa = async (req, res) => {
             return res.status(404).json({ error: 'Empresa não encontrada' });
         }
 
-        // Then get cursos
+
         const [rows] = await db.execute(
             'SELECT Curso_ID FROM Empresa_Curso WHERE Empresa_ID = ?',
             [id]
@@ -155,7 +154,7 @@ const getCursosInteresseEmpresa = async (req, res) => {
         
         console.log('Resultado da query:', rows);
         
-        // Even if no courses found, return empty array (not an error)
+
         const cursoIds = rows.map(row => row.Curso_ID);
         console.log('IDs dos cursos encontrados:', cursoIds);
         

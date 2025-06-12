@@ -15,7 +15,7 @@ class LoginLog {
 
     static async findAll({ role, startDate, endDate, page = 1, limit = 10 }) {
         try {
-            // Validação e conversão de page e limit
+
             const pageNumber = Number(page);
             const limitNumber = Number(limit);
 
@@ -37,7 +37,7 @@ class LoginLog {
             }
 
             if (startDate) {
-                // Validar e formatar startDate
+
                 const start = new Date(startDate);
                 if (isNaN(start.getTime())) {
                     throw new Error('Data de início inválida');
@@ -48,7 +48,7 @@ class LoginLog {
             }
 
             if (endDate) {
-                // Validar e formatar endDate
+
                 const end = new Date(endDate);
                 if (isNaN(end.getTime())) {
                     throw new Error('Data de fim inválida');
@@ -58,11 +58,11 @@ class LoginLog {
                 params.push(formattedEndDate);
             }
 
-            // Get total first
+
             const countQuery = query.replace('l.*, u.email, u.role', 'COUNT(*) as total');
             const [countResult] = await db.execute(countQuery, params);
 
-            // Add pagination (NUNCA use LIMIT ? OFFSET ? se der erro, interpolar é seguro aqui pois são números)
+            
             const paginatedQuery = `${query} ORDER BY l.login_at DESC LIMIT ${lim} OFFSET ${offset}`;
             const [rows] = await db.execute(paginatedQuery, params);
 
@@ -72,6 +72,23 @@ class LoginLog {
             };
         } catch (error) {
             console.error('Erro ao buscar logs:', error);
+            throw error;
+        }
+    }
+
+    static async deleteOldLogs() {
+        try {
+            const ninetyDaysAgo = new Date();
+            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+            const formattedDate = ninetyDaysAgo.toISOString().slice(0, 19).replace('T', ' ');
+
+            await db.execute(
+                'DELETE FROM login_logs WHERE login_at < ?',
+                [formattedDate]
+            );
+            console.log(`Logs de login mais antigos que 90 dias eliminados com sucesso.`);
+        } catch (error) {
+            console.error('Erro ao eliminar logs antigos:', error);
             throw error;
         }
     }

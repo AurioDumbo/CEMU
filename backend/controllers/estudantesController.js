@@ -1,7 +1,5 @@
-
 const db = require('../config/db');
-
-// CREATE: Inserir um novo estudante
+    
 async function createEstudante(req, res) {
     const { Nome, Sobrenome, Curso_ID, Telefone, Email, Faculdade_ID, Estado, Sexo } = req.body;
 
@@ -10,6 +8,20 @@ async function createEstudante(req, res) {
     }
 
     try {
+        // Verificar se já existe um estudante com o mesmo email ou telefone
+        if (Email) {
+            const [existingEmail] = await db.execute('SELECT ID FROM Estudante WHERE Email = ?', [Email]);
+            if (existingEmail.length > 0) {
+                return res.status(409).json({ error: 'Email já registrado' });
+            }
+        }
+        if (Telefone) {
+            const [existingTelefone] = await db.execute('SELECT ID FROM Estudante WHERE Telefone = ?', [Telefone]);
+            if (existingTelefone.length > 0) {
+                return res.status(409).json({ error: 'Telefone já registrado' });
+            }
+        }
+
         const sql = `
              INSERT INTO Estudante (Nome, Sobrenome, Curso_ID, Telefone, Email, Faculdade_ID, Estado, Sexo) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;

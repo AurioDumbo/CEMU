@@ -8,7 +8,6 @@ export default function LogsLogin() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Estados para filtros e paginação
   const [filters, setFilters] = useState({
     role: '',
     startDate: '',
@@ -18,7 +17,6 @@ export default function LogsLogin() {
   const [totalPages, setTotalPages] = useState(0);
   const [itemsPerPage] = useState(10);
 
-  // Buscar logs com filtros e paginação
   const fetchLogs = async () => {
     try {
       const response = await api.get('http://localhost:5001/api/usuarios/login-logs', {
@@ -43,20 +41,18 @@ export default function LogsLogin() {
 
   useEffect(() => {
     fetchLogs();
-    // eslint-disable-next-line
+
   }, [currentPage, filters]);
 
-  // Handler para filtros
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({
       ...prev,
       [name]: value
     }));
-    setCurrentPage(1); // Reset página ao filtrar
+    setCurrentPage(1); 
   };
 
-  // Componente de Paginação
   const Pagination = () => (
     <div className="flex justify-center gap-2 mt-4">
       <button
@@ -104,7 +100,6 @@ export default function LogsLogin() {
           </button>
         </div>
 
-        {/* Filtros */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -150,7 +145,6 @@ export default function LogsLogin() {
           </div>
         </div>
 
-        {/* Tabela de Logs */}
         <div className="overflow-hidden rounded-lg border border-gray-200">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -192,7 +186,6 @@ export default function LogsLogin() {
           </table>
         </div>
 
-        {/* Paginação */}
         <Pagination />
       </div>
     </div>

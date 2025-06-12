@@ -1,34 +1,43 @@
-import { BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import RegisterStudent from './components/RegistrarEstudante';
-import RegisterCompany from './components/RegistrarEmpresa';
-import RegistrarPessoa from './components/Registrar';
-import ListarEstagios from './components/ListarEstagios';
-import DetalhesEstagio from './components/DetalhesEstagio';
-import ListarRegistros from './components/ListarRegistros';
-import Sidebar from './components/Sidebar';
-import EditarEstagio from './components/EditarEstagio';
-import EditarEstudante from './components/EditarEstudante';
-import EditarEmpresa from './components/EditarEmpresa';
-import AdminPainel from './components/AdminPainel';
-import Perfil from './components/Perfil';
-import CriarUsuario from './components/UsuariosAdmin';
-import FaculdadesAdmin from './components/FaculdadesAdmin'; 
-import AdicionarCurso from './components/AdicionarCurso';
-import LogsLogin from './components/LogsLogin';
-import ListarCursos from './components/ListarCursos';
-import RegistrarEstagio from './components/RegistrarEstagio';
-import EditarCurso from './components/EditarCurso';
+import Header from './components/Header';
 
-// Layout component que inclui a Sidebar
+// Importações dinâmicas (React.lazy)
+const Login = React.lazy(() => import('./components/Login'));
+const Dashboard = React.lazy(() => import('./components/Dashboard'));
+const ListarRegistros = React.lazy(() => import('./components/ListarRegistros'));
+const ListarEstagios = React.lazy(() => import('./components/ListarEstagios'));
+const ListarCursos = React.lazy(() => import('./components/ListarCursos'));
+const UsuariosAdmin = React.lazy(() => import('./components/UsuariosAdmin'));
+const FaculdadesAdmin = React.lazy(() => import('./components/FaculdadesAdmin'));
+const RegisterStudent = React.lazy(() => import('./components/RegistrarEstudante'));
+const RegisterCompany = React.lazy(() => import('./components/RegistrarEmpresa'));
+const EditarEstagio = React.lazy(() => import('./components/EditarEstagio'));
+const EditarEstudante = React.lazy(() => import('./components/EditarEstudante'));
+const EditarEmpresa = React.lazy(() => import('./components/EditarEmpresa'));
+const AdicionarCurso = React.lazy(() => import('./components/AdicionarCurso'));
+const EditarCurso = React.lazy(() => import('./components/EditarCurso'));
+const RegistrarPessoa = React.lazy(() => import('./components/Registrar'));
+const DetalhesEstagio = React.lazy(() => import('./components/DetalhesEstagio'));
+const LogsLogin = React.lazy(() => import('./components/LogsLogin'));
+const AdminPainel = React.lazy(() => import('./components/AdminPainel'));
+const Perfil = React.lazy(() => import('./components/Perfil'));
+const Sidebar = React.lazy(() => import('./components/Sidebar'));
+const RegistrarEstagio = React.lazy(() => import('./components/RegistrarEstagio'));
+
+// Layout component que inclui Header e Sidebar
 const Layout = ({ children }) => (
-  <div className="min-h-screen bg-gray-100 font-sans flex">
+  <div className="min-h-screen bg-gray-100 font-sans flex flex-col">
+    <Header />
+    <div className="flex flex-1 overflow-hidden pt-16">
+      <Suspense fallback={<div>Carregando menu...</div>}>
     <Sidebar />
-    {children}
+      </Suspense>
+      <main className="flex-1 overflow-y-auto">{children}</main>
+    </div>
   </div>
 );
 
@@ -66,7 +75,7 @@ function App() {
           path="/login"
           element={
             !sessionStorage.getItem('token')
-              ? <Login />
+              ? <Suspense fallback={<div>Carregando login...</div>}><Login /></Suspense>
               : <Navigate to={getDefaultRoute()} replace />
           }
         />
@@ -76,7 +85,11 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Layout><Dashboard /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando dashboard...</div>}>
+                  <Dashboard />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -84,7 +97,11 @@ function App() {
           path="/register"
           element={
             <ProtectedRoute requiredRole={2}>
-              <Layout><RegistrarPessoa /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando registro de pessoa...</div>}>
+                  <RegistrarPessoa />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -92,7 +109,11 @@ function App() {
           path="/registros"
           element={
             <ProtectedRoute>
-              <Layout><ListarRegistros /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando registros...</div>}>
+                  <ListarRegistros />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -100,7 +121,11 @@ function App() {
           path="/estagios"
           element={
             <ProtectedRoute>
-              <Layout><ListarEstagios /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando estágios...</div>}>
+                  <ListarEstagios />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -108,17 +133,24 @@ function App() {
           path="/estagios/novo"
           element={
             <ProtectedRoute requiredRole={2}>
-              <Layout><RegistrarEstagio /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando novo estágio...</div>}>
+                  <RegistrarEstagio />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
-
         {/* Rotas apenas para usuários nível 2 */}
         <Route
           path="/register-student"
           element={
             <ProtectedRoute requiredRole={2}>
-              <Layout><RegisterStudent /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando registro de estudante...</div>}>
+                  <RegisterStudent />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -126,7 +158,11 @@ function App() {
           path="/register-company"
           element={
             <ProtectedRoute requiredRole={2}>
-              <Layout><RegisterCompany /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando registro de empresa...</div>}>
+                  <RegisterCompany />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -134,7 +170,11 @@ function App() {
           path="/estagios/:id/edit"
           element={
             <ProtectedRoute requiredRole={2}>
-              <Layout><EditarEstagio /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando edição de estágio...</div>}>
+                  <EditarEstagio />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -142,7 +182,11 @@ function App() {
           path="/estagios/:id"
           element={
             <ProtectedRoute requiredRole={2}>
-              <Layout><DetalhesEstagio /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando detalhes do estágio...</div>}>
+                  <DetalhesEstagio />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -150,7 +194,11 @@ function App() {
           path="/estudante/:id/edit"
           element={
             <ProtectedRoute requiredRole={2}>
-              <Layout><EditarEstudante /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando edição de estudante...</div>}>
+                  <EditarEstudante />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -158,37 +206,45 @@ function App() {
           path="/empresas/:id/edit"
           element={
             <ProtectedRoute requiredRole={2}>
-              <Layout><EditarEmpresa /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando edição de empresa...</div>}>
+                  <EditarEmpresa />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
-
         {/* Rota apenas para admin (nível 1) */}
         <Route
           path="/admin"
           element={
-            <ProtectedRoute requiredRole="1">
+            <ProtectedRoute requiredRole={1}>
+              <Suspense fallback={<div>Carregando painel admin...</div>}>
               <AdminPainel />
+              </Suspense>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/perfil"
           element={
             <ProtectedRoute>
-              <Layout><Perfil /></Layout>
+              <Layout>
+                <Suspense fallback={<div>Carregando perfil...</div>}>
+                  <Perfil />
+                </Suspense>
+              </Layout>
             </ProtectedRoute>
           }
         />
-
         {/* Rotas administrativas */}
-
         <Route
           path="/usuarios"
           element={
             <ProtectedRoute requiredRole={1}>
-              <CriarUsuario />
+              <Suspense fallback={<div>Carregando usuários...</div>}>
+                <UsuariosAdmin />
+              </Suspense>
             </ProtectedRoute>
           }
         />
@@ -196,23 +252,54 @@ function App() {
           path="/usuarios/:id"
           element={
             <ProtectedRoute requiredRole={1}>
-              <CriarUsuario />
+              <Suspense fallback={<div>Carregando usuários...</div>}>
+                <UsuariosAdmin />
+              </Suspense>
             </ProtectedRoute>
           }
         />
-        <Route path="/cursos/novo" element={<AdicionarCurso />} />
-        <Route path="/cursos/editar/:id" element={<EditarCurso />} />
-        <Route path="/cursos" element={<ListarCursos />} />
-        <Route path="/logs" element={<LogsLogin />} />
+        <Route
+          path="/cursos/novo"
+          element={
+            <Suspense fallback={<div>Carregando adição de curso...</div>}>
+              <AdicionarCurso />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/cursos/editar/:id"
+          element={
+            <Suspense fallback={<div>Carregando edição de curso...</div>}>
+              <EditarCurso />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/cursos"
+          element={
+            <Suspense fallback={<div>Carregando cursos...</div>}>
+              <ListarCursos />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/logs"
+          element={
+            <Suspense fallback={<div>Carregando logs de login...</div>}>
+              <LogsLogin />
+            </Suspense>
+          }
+        />
         <Route
           path="/faculdades"
           element={
             <ProtectedRoute requiredRole={1}>
+              <Suspense fallback={<div>Carregando faculdades...</div>}>
               <FaculdadesAdmin />
+              </Suspense>
             </ProtectedRoute>
           }
         />
-
         {/* Redirecionar para a rota padrão baseada no role */}
         <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
         <Route path="*" element={<Navigate to={getDefaultRoute()} replace />} />

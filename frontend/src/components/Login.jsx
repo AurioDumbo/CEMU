@@ -16,18 +16,15 @@ function Login() {
         const res = await api.post('/api/usuarios/login', { email, password });
         console.log('Resposta do login:', res.data);
 
-        // Ajusta para usar 'token' ao invés de 'accessToken'
         const { token, role } = res.data;
 
         if (!token) {
             throw new Error('Token não recebido do servidor');
         }
 
-        // Salva token
         sessionStorage.setItem('token', token);
         sessionStorage.setItem('role', role);
 
-        // Verifica se foram salvos
         console.log('Tokens salvos:', {
             token: sessionStorage.getItem('token'),
             role: sessionStorage.getItem('role')

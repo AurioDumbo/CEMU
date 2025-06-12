@@ -3,7 +3,7 @@ const db = require('../config/db');
 class EmpresaCurso {
     static async getCursosInteresseEmpresa(empresaId) {
         try {
-            // Converte para número e valida
+
             const id = parseInt(empresaId);
             if (isNaN(id)) throw new Error('ID inválido');
 

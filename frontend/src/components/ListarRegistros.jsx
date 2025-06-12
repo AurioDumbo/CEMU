@@ -134,7 +134,7 @@ const ListarRegistros = () => {
       await atualizarDados();
     } catch (error) {
       console.error('Erro ao excluir empresa:', error);
-      // Tenta pegar a mensagem do backend
+      
       const mensagem = error.response?.data?.message || 'Erro ao excluir empresa';
       toast.error(mensagem);
     }

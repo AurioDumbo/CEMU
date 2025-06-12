@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../utils/axiosInstance'; // Troque axios por api
+import api from '../utils/axiosInstance';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
@@ -126,7 +126,7 @@ export default function DetalhesEstagio() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Informações do Estudante */}
+             
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Informações do Estudante</h2>
                 <div className="space-y-3">
@@ -145,7 +145,7 @@ export default function DetalhesEstagio() {
                 </div>
               </div>
 
-              {/* Informações da Empresa */}
+             
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Informações da Empresa</h2>
                 <div className="space-y-3">
@@ -168,7 +168,7 @@ export default function DetalhesEstagio() {
                 </div>
               </div>
 
-              {/* Informações do Estágio */}
+              
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm md:col-span-2">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Informações do Estágio</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

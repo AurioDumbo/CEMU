@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/axiosInstance';
-import axios from 'axios'; // para APIs externas
+import axios from 'axios'; 
 import { toast } from 'react-toastify';
 import Select from 'react-select';
 
@@ -36,7 +36,7 @@ export default function RegistrarEstagio({ onSuccess }) {
           axios.get('https://angolaprovinciasapi.ggwp.com.br/api/v1/provincias'),
           api.get('http://localhost:5001/api/estagios')
         ]);
-        // Filtra estudantes que não têm estágios ativos
+       
         const estudantesComEstagio = new Set(estagiosRes.data.map(estagio => estagio.Estudante_ID));
         const estudantesDisponiveis = estRes.data.filter(estudante => !estudantesComEstagio.has(estudante.id));
         setEstudantes(estudantesDisponiveis);
@@ -49,14 +49,14 @@ export default function RegistrarEstagio({ onSuccess }) {
     fetchData();
   }, []);
 
-  // Buscar empresas por curso do estudante selecionado
+  
   useEffect(() => {
     const fetchEmpresasPorCurso = async () => {
       if (!formData.Estudante_ID) {
         setEmpresas([]);
         return;
       }
-      // Encontrar o estudante selecionado
+      
       const estudanteSelecionado = estudantes.find(e => String(e.id) === String(formData.Estudante_ID));
       console.log('Estudante selecionado:', estudanteSelecionado);
       const cursoId = estudanteSelecionado?.curso?.id;
@@ -80,7 +80,7 @@ export default function RegistrarEstagio({ onSuccess }) {
   const validateForm = () => {
     const newErrors = {};
     
-    // Validação dos campos obrigatórios
+    
     if (!formData.Estudante_ID || formData.Estudante_ID === '') {
       newErrors.Estudante_ID = 'O estudante é obrigatório';
     }
@@ -123,7 +123,7 @@ export default function RegistrarEstagio({ onSuccess }) {
       newErrors.Data_Fim = 'A data de fim deve ser posterior à data de início';
     }
 
-    // Validação do número de telemóvel do responsável
+    
     if (formData.Responsavel_Telefone && !/^\d{9}$/.test(formData.Responsavel_Telefone)) {
       newErrors.Responsavel_Telefone = 'Número de telemóvel inválido (deve conter 9 dígitos)';
     }
@@ -171,7 +171,7 @@ export default function RegistrarEstagio({ onSuccess }) {
       Termino: formData.Data_Fim      
     };
 
-    // Log para debug
+    
     console.log('Payload a ser enviado:', payload);
     console.log('Valores originais:', {
       Modalidade: formData.Modalidade,
@@ -196,7 +196,7 @@ export default function RegistrarEstagio({ onSuccess }) {
         Status: 'Pendente',
         Observacoes: ''
       });
-      if (onSuccess) onSuccess(); // Chama o modal de sucesso do pai
+        if (onSuccess) onSuccess(); 
     } catch {
       toast.error('Erro ao registrar estágio. Tente novamente.');
     }

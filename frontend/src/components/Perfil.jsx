@@ -25,7 +25,7 @@ export default function Perfil() {
         if (!token) {
             navigate('/login');
         }
-        // eslint-disable-next-line
+   
     }, []);
 
     const fetchUserData = async () => {
@@ -65,7 +65,7 @@ export default function Perfil() {
                 { novaSenha: passwords.newPassword },
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho
+                        Authorization: `Bearer ${token}`, 
                     },
                 }
             );
@@ -120,7 +120,7 @@ export default function Perfil() {
                 </button>
             </div>
             <div className="space-y-6">
-                {/* Informações do Usuário */}
+               
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
                         <FaEnvelope className="text-red-600 text-xl" />
@@ -155,7 +155,7 @@ export default function Perfil() {
                     </div>
                 </div>
 
-                {/* Botão Alterar Senha */}
+               
                 <div className="mt-6">
                     <button
                         onClick={() => setIsChangingPassword(!isChangingPassword)}
@@ -166,7 +166,7 @@ export default function Perfil() {
                     </button>
                 </div>
 
-                {/* Formulário de Alteração de Senha */}
+                
                 {isChangingPassword && (
                     <form onSubmit={handlePasswordChange} className="mt-6 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

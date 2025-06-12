@@ -172,7 +172,7 @@ export default function Dashboard() {
       datalabels: {
         anchor: 'end',
         align: 'end',
-        color: '#3B82F6',
+        color: '#111827', // Preto
         font: {
           weight: 'bold',
           size: 16,
@@ -202,8 +202,8 @@ export default function Dashboard() {
     },
     scales: {
       x: {
-        beginAtZero: false,
-        min: 1,
+        beginAtZero: true,
+        min: 0,
         max: 5,
         grid: {
           display: false,
@@ -262,7 +262,7 @@ export default function Dashboard() {
   return (
     <div className="flex-1 p-6 bg-gray-100">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-700 mb-6">Dashboard</h1>
+        <NotificacoesEstagios />
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-600">Carregando dados...</div>

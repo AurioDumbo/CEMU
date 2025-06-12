@@ -17,6 +17,7 @@ const RegistrarEstudante = ({ onSuccess }) => {
     Faculdade_ID: '',
     Sexo: ''
   });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,22 +56,46 @@ const RegistrarEstudante = ({ onSuccess }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let newValue = value;
+   
+    if (name === 'Nome' || name === 'Sobrenome') {
+      newValue = newValue.replace(/\d/g, '');
+    }
+      
+    if (name === 'Telefone') {
+      newValue = newValue.replace(/\D/g, '').slice(0, 9);
+    }
     setFormData(prevState => ({
       ...prevState,
-      [name]: value
+      [name]: newValue
     }));
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (formData.Telefone && formData.Telefone.length !== 9) {
-      toast.error('Número de telemóvel inválido. Deve conter exatamente 9 dígitos.');
-      return;
+    const newErrors = {};
+    if (!formData.Nome.trim()) {
+      newErrors.Nome = 'O nome é obrigatório.';
+    } else if (/\d/.test(formData.Nome)) {
+      newErrors.Nome = 'O nome não pode conter números.';
     }
-
+    if (!formData.Sobrenome.trim()) {
+      newErrors.Sobrenome = 'O sobrenome é obrigatório.';
+    } else if (/\d/.test(formData.Sobrenome)) {
+      newErrors.Sobrenome = 'O sobrenome não pode conter números.';
+    }
+    if (formData.Telefone && formData.Telefone.length !== 9) {
+      newErrors.Telefone = 'Número de telemóvel inválido. Deve conter exatamente 9 dígitos.';
+    }
     if (formData.Email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.Email)) {
       toast.error('Email inválido. Por favor, insira um email válido.');
+      return;
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -134,6 +159,7 @@ const RegistrarEstudante = ({ onSuccess }) => {
             required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-red-500 sm:text-sm"
           />
+          {errors.Nome && <p className="mt-1 text-sm text-red-600">{errors.Nome}</p>}
         </div>
 
         <div className="sm:col-span-3">
@@ -149,6 +175,7 @@ const RegistrarEstudante = ({ onSuccess }) => {
             required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
+          {errors.Sobrenome && <p className="mt-1 text-sm text-red-600">{errors.Sobrenome}</p>}
         </div>
 
         <div className="sm:col-span-3">
@@ -193,8 +220,10 @@ const RegistrarEstudante = ({ onSuccess }) => {
             id="telefone"
             value={formData.Telefone}
             onChange={handleChange}
+            maxLength={9}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
+          {errors.Telefone && <p className="mt-1 text-sm text-red-600">{errors.Telefone}</p>}
         </div>
 
         <div className="sm:col-span-3">

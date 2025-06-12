@@ -80,7 +80,7 @@ export default function EditarEmpresa() {
     const fetchCursosInteresse = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            console.log('Fetching cursos for empresa ID:', id); // Add this log
+            console.log('Fetching cursos for empresa ID:', id); 
             
             const res = await api.get(
                 `http://localhost:5001/api/empresa_curso/empresa/${id}`,
@@ -92,7 +92,7 @@ export default function EditarEmpresa() {
                 }
             );
             
-            console.log('Response from API:', res.data); // Add this log
+                console.log('Response from API:', res.data); 
             setCursosInteresse(res.data);
         } catch (error) {
             console.error('Error fetching cursos:', error.response || error);
