@@ -72,7 +72,6 @@ async function getEmpresaById(req, res) {
 async function updateEmpresa(req, res) {
     const { NIF, Nome, Provincia, Telefone, Email, Status } = req.body;
 
-    // Apenas NIF, Nome e Provincia são obrigatórios
     if (!NIF || !Nome || !Provincia) {
         return res.status(400).json({ error: 'Os campos NIF, Nome e Provincia são obrigatórios!' });
     }
@@ -93,10 +92,9 @@ async function updateEmpresa(req, res) {
     }
 }
 
-// DELETE: Remover uma empresa
+        
 async function deleteEmpresa(req, res) {
     try {
-        // Verifica se há estudantes vinculados via estágios
         const [estagios] = await db.execute(
             'SELECT COUNT(*) as total FROM Estagio WHERE Empresa_ID = ?',
             [req.params.id]

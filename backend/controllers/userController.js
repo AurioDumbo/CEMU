@@ -65,7 +65,7 @@ const updateUser = async (req, res) => {
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
-        // Verificar se o email já existe para outro usuário
+
         if (email !== user.email) {
             const existingUser = await User.findByEmail(email);
             if (existingUser) {
@@ -73,7 +73,7 @@ const updateUser = async (req, res) => {
             }
         }
 
-        // Atualizar usuário
+       
         await require('../config/db').execute(
             'UPDATE users SET email = ?, role = ? WHERE id = ?',
             [email, role, id]
@@ -111,4 +111,56 @@ const listarUsuarios = async (req, res) => {
     }
 };
 
-module.exports = { register, login, isAdmin, updateUser, deleteUser, listarUsuarios };
+const alterarSenha = async (req, res) => {
+    console.log('Rota alterarSenha foi chamada!'); // Adicione esta linha
+    try {
+        const userId = req.user.id;
+        const { novaSenha } = req.body;
+        if (!novaSenha || novaSenha.length < 6) {
+            return res.status(400).json({ message: 'A senha deve ter pelo menos 6 caracteres.' });
+        }
+        const hashedPassword = await hash(novaSenha, 10);
+        await User.updatePassword(userId, hashedPassword);
+        res.json({ message: 'Senha alterada com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao alterar senha:', error);
+        res.status(500).json({ message: 'Erro ao alterar senha', error: error.message });
+    }
+};
+
+const getRoleName = (role) => {
+    const roles = {
+        1: 'Administrador',
+        2: 'Funcionário',
+        3: 'Leitor'
+    };
+    return roles[role] || 'Não definido';
+};
+
+const perfilUsuario = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+
+        const [logs] = await db.execute(
+            'SELECT login_at FROM login_logs WHERE user_id = ? ORDER BY login_at DESC LIMIT 1',
+            [user.id]
+        );
+        const ultimoAcesso = logs.length > 0 ? logs[0].login_at : null;
+
+        res.json({
+            email: user.email,
+            role: user.role,
+            roleName: getRoleName(user.role),
+            ultimoAcesso: ultimoAcesso,
+            dataCriacao: user.createdAt || null
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao buscar perfil', error: error.message });
+    }
+};
+
+module.exports = { register, login, isAdmin, updateUser, deleteUser, listarUsuarios, alterarSenha, perfilUsuario };

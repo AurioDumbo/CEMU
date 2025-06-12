@@ -1,4 +1,4 @@
-// dashboardController.js
+
 const db = require('../config/db');
 
 const getEstagiariosPorProvincia = async (req, res) => {
@@ -46,22 +46,19 @@ const getEmpresasTopEstagios = async (req, res) => {
 
 const getDashboardData = async (req, res) => {
     try {
-        // Contagem de estagiários ativos
+
         const [estagiariosAtivos] = await db.execute(`
             SELECT COUNT(*) as total FROM Estudante WHERE Estado = 'Ativo'
         `);
 
-        // Contagem de empresas ativas
+
         const [empresasAtivas] = await db.execute(`
             SELECT COUNT(*) as total FROM Empresa WHERE Status = 'Ativo'
         `);
 
-        // Contagem de estudantes pendentes
-        const [estudantesPendentes] = await db.execute(`
-            SELECT COUNT(*) as total FROM Estudante WHERE Estado = 'Pendente'
-        `);
 
-        // Contagem de empresas pendentes
+
+
         const [empresasPendentes] = await db.execute(`
             SELECT COUNT(*) as total FROM Empresa WHERE Status = 'Pendente'
         `);

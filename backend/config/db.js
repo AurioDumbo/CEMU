@@ -11,12 +11,12 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// Add this after pool creation
+
 pool.on('error', (err) => {
     console.error('Database pool error:', err);
 });
 
-// Add this to your execute wrapper
+
 const execute = async (...args) => {
     try {
         const result = await pool.execute(...args);
@@ -27,12 +27,12 @@ const execute = async (...args) => {
     }
 };
 
-// Função para inicializar o banco de dados
+
 async function initializeDatabase() {
     try {
         const connection = await pool.getConnection();
         
-        // Criar tabela de Faculdade
+
         await connection.execute(`
             CREATE TABLE IF NOT EXISTS Faculdade (
                 ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -41,7 +41,7 @@ async function initializeDatabase() {
             )
         `);
 
-        // Criar tabela de Curso
+
         await connection.execute(`
             CREATE TABLE IF NOT EXISTS Curso (
                 ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -52,7 +52,7 @@ async function initializeDatabase() {
             )
         `);
 
-        // Criar tabela de Estudante
+
         await connection.execute(`
             CREATE TABLE IF NOT EXISTS Estudante (
                 ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,7 +70,7 @@ async function initializeDatabase() {
             )
         `);
 
-        // Criar tabela de Empresa
+
         await connection.execute(`
             CREATE TABLE IF NOT EXISTS Empresa (
                 ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -83,7 +83,7 @@ async function initializeDatabase() {
             )
         `);
 
-        // Criar tabela de Empresa_Curso
+            
         await connection.execute(`
             CREATE TABLE IF NOT EXISTS Empresa_Curso (
                 Empresa_ID INT,

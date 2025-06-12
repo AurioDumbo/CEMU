@@ -42,10 +42,8 @@ export default function Modal({ isOpen, onClose, title, message, type = 'success
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4">
-        {/* Backdrop com blur */}
         <div className="fixed inset-0 backdrop-blur-sm bg-black bg-opacity-30 transition-opacity"></div>
 
-        {/* Modal */}
         <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
           <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${styles.bgColor} mb-4`}>
             {styles.icon}

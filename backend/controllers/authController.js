@@ -3,16 +3,12 @@ const User = require('../models/user');
 const ACCESS_SECRET = process.env.JWT_SECRET || 'access_secret';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'refresh_secret';
 
-// Em produção, armazene refresh tokens no banco!
 let refreshTokens = [];
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findByEmail(email);
     if (!user) return res.status(401).json({ error: 'Credenciais inválidas' });
-
-    // Verifique a senha aqui (ex: bcrypt)...
-
     const payload = { id: user.id, role: user.role };
     const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '8h' });
     const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: '7d' });

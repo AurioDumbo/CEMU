@@ -37,19 +37,13 @@ export default function Sidebar() {
   );
 
   return (
-    <div className="flex flex-col h-screen bg-white shadow w-20 fixed left-0 top-0">
+    <div className="flex flex-col h-screen bg-white shadow w-20 fixed left-0 top-0 pt-16">
       <div className="flex flex-col items-center py-4 flex-1">
-        {/* Dashboard - disponível para todos */}
         {renderNavigationButton('/dashboard', dashboardIcon, 'Dashboard')}
-        {/* Registrar - apenas para nível 2 (funcionário) */}
         {userRole === 2 && renderNavigationButton('/register', addIcon, 'Registrar')}
-        {/* Estágios - disponível para todos */}
         {renderNavigationButton('/estagios', empresasEstudantesIcon, 'Estágios')}
-        {/* Relatórios - disponível para todos */}
         {renderNavigationButton('/registros', relatoriosIcon, 'Relatórios')}
-        {/* Espaço flexível para empurrar o avatar para baixo */}
         <div className="flex-1" />
-        {/* Perfil fixo na parte de baixo */}
         <Link
           to="/perfil"
           className={`flex flex-col items-center mb-2 ${isActive('/perfil') ? 'text-purple-700' : 'text-gray-500 hover:text-purple-700'}`}

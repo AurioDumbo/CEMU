@@ -1,7 +1,6 @@
-const db = require('../config/db'); // Certifique-se de que o módulo de conexão com o banco de dados está configurado
-const { io } = require('../server'); // Importe o io
+const db = require('../config/db');
+const { io } = require('../server');
 
-// CREATE: Inserir um novo estágio
 async function createEstagio(req, res) {
     const {
         Estudante_ID,
@@ -21,7 +20,7 @@ async function createEstagio(req, res) {
     // Log para debug
     console.log('Dados recebidos:', req.body);
 
-    // Validação dos campos obrigatórios
+ 
     const camposObrigatorios = {
         Estudante_ID: 'Estudante',
         Empresa_ID: 'Empresa',
@@ -45,7 +44,7 @@ async function createEstagio(req, res) {
         });
     }
 
-    // Validação dos campos numéricos
+
     if (isNaN(Tipo) || Tipo === null) {
         return res.status(400).json({ error: 'Tipo de estágio inválido' });
     }
@@ -57,7 +56,7 @@ async function createEstagio(req, res) {
     }
 
     try {
-        // Verifica se a empresa existe e está ativa
+ 
         const [empresaRows] = await db.execute(
             'SELECT Status FROM Empresa WHERE ID = ?',
             [Empresa_ID]
@@ -71,7 +70,6 @@ async function createEstagio(req, res) {
             return res.status(400).json({ error: 'A empresa não está ativa. Não é possível registrar estágio.' });
         }
 
-        // Verifica se o estudante existe
         const [estudanteRows] = await db.execute(
             'SELECT ID FROM Estudante WHERE ID = ?',
             [Estudante_ID]
@@ -106,7 +104,7 @@ async function createEstagio(req, res) {
 // READ: Obter todos os estágios
 async function getAllEstagios(req, res) {
     try {
-        // Primeiro, atualiza o estado dos estudantes com base nas datas de início
+  
         await updateEstudantesStatus();
 
         const [rows] = await db.execute(`
@@ -151,7 +149,7 @@ async function updateEstudantesStatus() {
     }
 }
 
-// READ: Obter um estágio por ID
+
 async function getEstagioById(req, res) {
     const { id } = req.params;
 
@@ -188,7 +186,7 @@ async function getEstagioById(req, res) {
     }
 }
 
-// UPDATE: Atualizar um estágio
+
 async function updateEstagio(req, res) {
     const { id } = req.params;
     const {
@@ -244,7 +242,7 @@ async function updateEstagio(req, res) {
     }
 }
 
-// DELETE: Remover um estágio
+
 async function deleteEstagio(req, res) {
     const { id } = req.params;
 
@@ -295,18 +293,18 @@ async function emitirNotificacoesEstagios() {
     const dataLimite = new Date();
     dataLimite.setDate(hoje.getDate() + dias);
 
-    // Estágios prestes a começar
+
     const [aComecar] = await db.execute(
         `SELECT * FROM Estagio WHERE Inicio BETWEEN ? AND ?`,
         [hoje.toISOString().split('T')[0], dataLimite.toISOString().split('T')[0]]
     );
-    // Estágios prestes a terminar
+
     const [aTerminar] = await db.execute(
         `SELECT * FROM Estagio WHERE Termino BETWEEN ? AND ?`,
         [hoje.toISOString().split('T')[0], dataLimite.toISOString().split('T')[0]]
     );
 
-    // Envia para todos conectados
+
     if (aComecar.length > 0) {
         aComecar.forEach(estagio => {
             io.emit('notificacaoEstagio', { tipo: 'aComecar', ...estagio });

@@ -7,6 +7,8 @@ const cron = require('node-cron');
 const http = require('http');
 const { Server } = require('socket.io');
 const { emitirNotificacoesEstagios } = require('./controllers/estagiosController');
+const path = require('path');
+const LoginLog = require('./models/LoginLog');
 
 const empresaCursoRoutes = require('./routes/empresaCurso');
 const estudantesRoutes = require('./routes/estudantes');
@@ -42,6 +44,17 @@ cron.schedule('0 0 * * *', async () => {
     await updateEstudanteEstado();
   } catch (error) {
     console.error('Erro ao executar atualização agendada dos estados:', error);
+  }
+});
+
+// Agendar a eliminação de logs antigos (executa todos os dias às 6 AM)
+cron.schedule('0 6 * * *', async () => {
+  console.log('Executando tarefa agendada: Eliminando logs de login antigos...');
+  try {
+    await LoginLog.deleteOldLogs();
+    console.log('Logs antigos eliminados com sucesso.');
+  } catch (error) {
+    console.error('Erro na tarefa agendada de eliminação de logs:', error);
   }
 });
 

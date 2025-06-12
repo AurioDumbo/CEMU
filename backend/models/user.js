@@ -18,6 +18,10 @@ class User {
         const [rows] = await db.execute('SELECT * FROM users WHERE id = ?', [id]);
         return rows[0] || null;
     }
+
+    static async updatePassword(id, hashedPassword) {
+        await db.execute('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, id]);
+    }
 }
 
 module.exports = User;

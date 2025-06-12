@@ -177,7 +177,7 @@ export default function FaculdadesAdmin() {
           </form>
         )}
 
-        {/* Lista de faculdades */}
+          
         <table className="w-full text-left mb-4">
           <thead>
             <tr>

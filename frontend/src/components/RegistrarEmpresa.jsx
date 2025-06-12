@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/axiosInstance';
-import axios from 'axios'; // para APIs externas
+import axios from 'axios'; 
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,8 +17,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
     Provincia: '',
     Telefone: '',
     Email: '',
-    Status: 'Pendente',
-    Sede: false
+    Status: 'Pendente'
   });
 
   useEffect(() => {
@@ -49,8 +48,8 @@ export default function RegistrarEmpresa({ onSuccess }) {
     
     if (!formData.NIF.trim()) {
       newErrors.NIF = 'O NIF é obrigatório';
-    } else if (!/^\d{14}$/.test(formData.NIF)) {
-      newErrors.NIF = 'NIF inválido (deve conter 14 dígitos)';
+    } else if (!/^\d{9}$/.test(formData.NIF)) {
+      newErrors.NIF = 'O NIF deve conter exatamente 9 dígitos';
     }
     
     if (!formData.Nome.trim()) {
@@ -70,7 +69,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
     }
     
     if (formData.Telefone && !/^\d{9}$/.test(formData.Telefone)) {
-      newErrors.Telefone = 'Número de telemóvel inválido (deve conter 9 dígitos)';
+      newErrors.Telefone = 'O número de telefone deve conter exatamente 9 dígitos';
     }
 
     if (cursosInteressados.length === 0) {
@@ -83,9 +82,13 @@ export default function RegistrarEmpresa({ onSuccess }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    let newValue = value;
+    if (name === 'NIF' || name === 'Telefone') {
+      newValue = newValue.replace(/\D/g, '').slice(0, 9);
+    }
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : newValue
     });
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
@@ -106,8 +109,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
         Provincia: formData.Provincia,
         Telefone: formData.Telefone,
         Email: formData.Email,
-        Status: formData.Status,
-        Sede: formData.Sede
+        Status: formData.Status
       };
 
       const response = await api.post('http://localhost:5001/api/empresas', empresaData);
@@ -124,8 +126,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
         Provincia: '',
         Telefone: '',
         Email: '',
-        Status: 'Pendente',
-        Sede: false
+        Status: 'Pendente'
       });
       setCursosInteressados([]);
       toast.success('Empresa registrada com sucesso!');
@@ -174,6 +175,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
             value={formData.NIF}
             onChange={handleChange}
             required
+            maxLength={9}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
           {errors.NIF && <p className="mt-1 text-sm text-red-600">{errors.NIF}</p>}
@@ -227,6 +229,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
             id="Telefone"
             value={formData.Telefone}
             onChange={handleChange}
+            maxLength={9}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
           />
           {errors.Telefone && <p className="mt-1 text-sm text-red-600">{errors.Telefone}</p>}
@@ -264,20 +267,6 @@ export default function RegistrarEmpresa({ onSuccess }) {
             <option value="Inativo">Inativo</option>
           </select>
           {errors.Status && <p className="mt-1 text-sm text-red-600">{errors.Status}</p>}
-        </div>
-
-        <div className="sm:col-span-3 flex items-center mt-6">
-          <input
-            type="checkbox"
-            name="Sede"
-            id="Sede"
-            checked={formData.Sede}
-            onChange={handleChange}
-            className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded mr-2"
-          />
-          <label htmlFor="Sede" className="block text-sm font-medium text-gray-700 select-none cursor-pointer">
-            Sede
-          </label>
         </div>
 
         <div className="sm:col-span-6">

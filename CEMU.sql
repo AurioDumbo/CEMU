@@ -90,5 +90,12 @@ ADD COLUMN Sexo TINYINT(1)() DEFAULT NULL
 AFTER Sobrenome;
 ALTER TABLE Estudante
 ADD COLUMN Sexo CHAR(1) NOT NULL COMMENT 'M = Masculino, F = Feminino';
--- Recrie a tabela Empresa_Curso com tipos UNSIGNED
-SELECT * FROM users;
+-- Tabela: login_logs
+DROP TABLE IF EXISTS login_logs;
+
+CREATE TABLE login_logs (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    login_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
