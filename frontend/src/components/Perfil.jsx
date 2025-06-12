@@ -21,6 +21,10 @@ export default function Perfil() {
 
     useEffect(() => {
         fetchUserData();
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+        }
         // eslint-disable-next-line
     }, []);
 
@@ -48,21 +52,30 @@ export default function Perfil() {
 
     const handlePasswordChange = async (e) => {
         e.preventDefault();
-        if (passwords.newPassword !== passwords.confirmPassword) {
-            toast.error('As senhas não coincidem');
-            return;
-        }
-
         try {
-            await api.put(
+            const token = sessionStorage.getItem('token'); 
+            console.log('Token:', token); 
+            if (!token) {
+                toast.error('Token não encontrado. Faça login novamente.');
+                navigate('/login');
+                return;
+            }
+            const response = await api.put(
                 'http://localhost:5001/api/usuarios/alterar-senha',
-                { novaSenha: passwords.newPassword }
+                { novaSenha: passwords.newPassword },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho
+                    },
+                }
             );
-            toast.success('Senha alterada com sucesso!');
-            setIsChangingPassword(false);
-            setPasswords({ newPassword: '', confirmPassword: '' });
+
+            if (response.status === 200) {
+                toast.success('Senha alterada com sucesso!');
+                setPasswords({ oldPassword: '', newPassword: '', confirmPassword: '' });
+            }
         } catch (error) {
-            console.error(error);
+            console.error('Erro ao alterar senha:', error);
             toast.error('Erro ao alterar senha');
         }
     };
@@ -78,15 +91,15 @@ export default function Perfil() {
     const getRoleName = (role) => {
         const roles = {
             1: 'Administrador',
-            2: 'Gestor',
-            3: 'Usuário'
+            2: 'Funcionário',
+            3: 'Leitor'
         };
         return roles[role] || 'Não definido';
     };
 
     const formatDate = (date) => {
         if (!date) return 'Não disponível';
-        // Corrige formato MySQL para Date JS
+     
         return new Date(date.replace(' ', 'T')).toLocaleString('pt-BR');
     };
 
@@ -110,7 +123,7 @@ export default function Perfil() {
                 {/* Informações do Usuário */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
-                        <FaEnvelope className="text-blue-600 text-xl" />
+                        <FaEnvelope className="text-red-600 text-xl" />
                         <div>
                             <p className="text-sm text-gray-500">Email</p>
                             <p className="font-medium">{userData.email}</p>
@@ -118,7 +131,7 @@ export default function Perfil() {
                     </div>
 
                     <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
-                        <FaUserCog className="text-blue-600 text-xl" />
+                        <FaUserCog className="text-red-600 text-xl" />
                         <div>
                             <p className="text-sm text-gray-500">Tipo de Usuário</p>
                             <p className="font-medium">{getRoleName(userData.role)}</p>
@@ -126,7 +139,7 @@ export default function Perfil() {
                     </div>
 
                     <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
-                        <FaClock className="text-blue-600 text-xl" />
+                        <FaClock className="text-red-600 text-xl" />
                         <div>
                             <p className="text-sm text-gray-500">Último Acesso</p>
                             <p className="font-medium">{formatDate(userData.ultimoAcesso)}</p>
@@ -134,7 +147,7 @@ export default function Perfil() {
                     </div>
 
                     <div className="p-4 bg-gray-50 rounded-lg flex items-center space-x-4">
-                        <FaCalendarAlt className="text-blue-600 text-xl" />
+                        <FaCalendarAlt className="text-red-600 text-xl" />
                         <div>
                             <p className="text-sm text-gray-500">Conta Criada em</p>
                             <p className="font-medium">{formatDate(userData.dataCriacao)}</p>
@@ -146,7 +159,7 @@ export default function Perfil() {
                 <div className="mt-6">
                     <button
                         onClick={() => setIsChangingPassword(!isChangingPassword)}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                     >
                         <FaKey className="mr-2" />
                         {isChangingPassword ? 'Cancelar' : 'Alterar Senha'}

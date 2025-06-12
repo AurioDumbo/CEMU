@@ -177,7 +177,7 @@ export default function LogsLogin() {
                       {log.role === 1 ? 'Admin' : log.role === 2 ? 'Funcionário' : 'Leitor'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(log.loginAt).toLocaleString('pt-BR')}
+                      {new Date(log.login_at).toLocaleString('pt-BR')}
                     </td>
                   </tr>
                 ))

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import NotificacoesEstagios from './NotificacoesEstagios';
 import api from '../utils/axiosInstance'; // Troque axios por api
-import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -27,7 +26,6 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const [provincesData, setProvincesData] = useState(null);
   const [companiesData, setCompaniesData] = useState(null);
   const [dashboardData, setDashboardData] = useState({
@@ -40,13 +38,6 @@ export default function Dashboard() {
   const chartRef = useRef(null);
 
   useEffect(() => {
-
-    const token = sessionStorage.getItem('token');
-    if (!token) {
-      navigate('/login', { replace: true });
-      return;
-    }
-
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -125,7 +116,7 @@ export default function Dashboard() {
     };
 
     fetchData();
-  }, [navigate]);
+  }, []);
 
   // Configuração do gráfico
   const config = {

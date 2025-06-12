@@ -15,8 +15,13 @@ class LoginLog {
 
     static async findAll({ role, startDate, endDate, page = 1, limit = 10 }) {
         try {
-            const offset = Math.max(0, (parseInt(page) - 1) * parseInt(limit));
-            const lim = Math.max(1, parseInt(limit));
+            // Validação e conversão de page e limit
+            const pageNumber = Number(page);
+            const limitNumber = Number(limit);
+
+            const offset = Math.max(0, (pageNumber - 1) * limitNumber);
+            const lim = Math.max(1, limitNumber);
+
             let query = `
                 SELECT l.*, u.email, u.role 
                 FROM login_logs l
@@ -32,13 +37,25 @@ class LoginLog {
             }
 
             if (startDate) {
+                // Validar e formatar startDate
+                const start = new Date(startDate);
+                if (isNaN(start.getTime())) {
+                    throw new Error('Data de início inválida');
+                }
+                const formattedStartDate = start.toISOString().slice(0, 19).replace('T', ' ');
                 query += ' AND l.login_at >= ?';
-                params.push(startDate + ' 00:00:00');
+                params.push(formattedStartDate);
             }
 
             if (endDate) {
+                // Validar e formatar endDate
+                const end = new Date(endDate);
+                if (isNaN(end.getTime())) {
+                    throw new Error('Data de fim inválida');
+                }
+                const formattedEndDate = end.toISOString().slice(0, 19).replace('T', ' ');
                 query += ' AND l.login_at <= ?';
-                params.push(endDate + ' 23:59:59');
+                params.push(formattedEndDate);
             }
 
             // Get total first

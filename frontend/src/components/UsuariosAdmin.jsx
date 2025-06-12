@@ -142,8 +142,8 @@ export default function UsuariosAdmin() {
 
         {/* Formulário de edição */}
         {editId !== null && (
-          <div className="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-            <h2 className="text-lg font-semibold text-blue-800 mb-4">Editar Usuário</h2>
+          <div className="mb-8 p-6 bg-red-50 rounded-lg border border-red-200">
+            <h2 className="text-lg font-semibold text-red-800 mb-4">Editar Usuário</h2>
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -152,7 +152,7 @@ export default function UsuariosAdmin() {
                 <input
                   type="email"
                   required
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-1 focus:ring-red-500"
                   value={editData.email}
                   onChange={e => setEditData({ ...editData, email: e.target.value })}
                 />
@@ -163,7 +163,7 @@ export default function UsuariosAdmin() {
                 </label>
                 <select
                   required
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-1 focus:ring-red-500"
                   value={editData.role}
                   onChange={e => setEditData({ ...editData, role: e.target.value })}
                 >
@@ -226,7 +226,7 @@ export default function UsuariosAdmin() {
               </label>
               <select
                 required
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-1 focus:ring-red-500"
                 value={formData.role}
                 onChange={e => setFormData({ ...formData, role: e.target.value })}
               >
@@ -237,7 +237,7 @@ export default function UsuariosAdmin() {
             </div>
             <button
               type="submit"
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               Adicionar Usuário
             </button>
@@ -267,7 +267,7 @@ export default function UsuariosAdmin() {
                 <td className="flex gap-2 py-2">
                   <button
                     onClick={() => handleEdit(usuario)}
-                    className="p-2 rounded hover:bg-blue-50 transition-colors"
+                    className="p-2 rounded hover:bg-red-50 transition-colors"
                     title="Editar"
                   >
                     <img src={editIcon} alt="Editar" className="w-5 h-5" />
