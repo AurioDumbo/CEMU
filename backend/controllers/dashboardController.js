@@ -1,4 +1,3 @@
-
 const db = require('../config/db');
 
 const getEstagiariosPorProvincia = async (req, res) => {
@@ -56,8 +55,9 @@ const getDashboardData = async (req, res) => {
             SELECT COUNT(*) as total FROM Empresa WHERE Status = 'Ativo'
         `);
 
-
-
+        const [estudantesPendentes] = await db.execute(`
+            SELECT COUNT(*) as total FROM Estudante WHERE Estado = 'Pendente'
+        `);
 
         const [empresasPendentes] = await db.execute(`
             SELECT COUNT(*) as total FROM Empresa WHERE Status = 'Pendente'

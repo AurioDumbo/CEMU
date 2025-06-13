@@ -52,9 +52,20 @@ export default function Perfil() {
 
     const handlePasswordChange = async (e) => {
         e.preventDefault();
+
+        if (passwords.newPassword.length < 6) {
+            toast.error('A nova senha deve ter pelo menos 6 caracteres.');
+            return;
+        }
+
+        if (passwords.newPassword !== passwords.confirmPassword) {
+            toast.error('As senhas não coincidem.');
+            return;
+        }
+
         try {
-            const token = sessionStorage.getItem('token'); 
-            console.log('Token:', token); 
+            const token = sessionStorage.getItem('token');
+            console.log('Token:', token);
             if (!token) {
                 toast.error('Token não encontrado. Faça login novamente.');
                 navigate('/login');
@@ -65,18 +76,23 @@ export default function Perfil() {
                 { novaSenha: passwords.newPassword },
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`, 
+                        Authorization: `Bearer ${token}`,
                     },
                 }
             );
 
             if (response.status === 200) {
                 toast.success('Senha alterada com sucesso!');
-                setPasswords({ oldPassword: '', newPassword: '', confirmPassword: '' });
+                setPasswords({ newPassword: '', confirmPassword: '' });
+                setIsChangingPassword(false);
             }
         } catch (error) {
             console.error('Erro ao alterar senha:', error);
-            toast.error('Erro ao alterar senha');
+            if (error.response && error.response.data && error.response.data.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error('Erro ao alterar senha. Tente novamente.');
+            }
         }
     };
 
@@ -183,7 +199,6 @@ export default function Perfil() {
                                     })}
                                     className="w-full p-2 border rounded-md"
                                     required
-                                    minLength={6}
                                 />
                             </div>
                             <div>
@@ -199,7 +214,6 @@ export default function Perfil() {
                                     })}
                                     className="w-full p-2 border rounded-md"
                                     required
-                                    minLength={6}
                                 />
                             </div>
                         </div>
