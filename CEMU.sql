@@ -1,3 +1,12 @@
+-- Tabela de Usuários
+CREATE TABLE IF NOT EXISTS users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role TINYINT NOT NULL DEFAULT 3,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Tabela 1: Faculdade
 CREATE TABLE Faculdade (
     ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -9,7 +18,7 @@ CREATE TABLE Curso (
     ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     Nome VARCHAR(60) NOT NULL UNIQUE,
     Faculdade_ID INT UNSIGNED,
-    FOREIGN KEY (Faculdade_ID) REFERENCES Faculdad_ID () ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (Faculdade_ID) REFERENCES Faculdade(ID) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- Tabela 3: Estudantes
@@ -17,6 +26,7 @@ CREATE TABLE Estudante (
     ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     Nome VARCHAR(50) NOT NULL,
     Sobrenome VARCHAR(40) NOT NULL,
+    Sexo CHAR(1) NOT NULL COMMENT 'M = Masculino, F = Feminino',
     Curso_ID INT UNSIGNED NOT NULL,
     Telefone VARCHAR(15),
     Email VARCHAR(100) UNIQUE,
@@ -79,17 +89,11 @@ CREATE TABLE FeedbackEstagio (
     FOREIGN KEY (Empresa_ID) REFERENCES Empresa (ID) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (Estagio_ID, Estudante_ID)
 );
-ALTER TABLE Curso 
-CHANGE COLUMN Faculdade_ID Faculdade_ID INT UNSIGNED,
-ADD FOREIGN KEY (Faculdade_ID) REFERENCES Faculdade(ID) ON DELETE CASCADE ON UPDATE CASCADE;
+
 CREATE INDEX idx_faculdade_nome ON Faculdade(Nome);
 CREATE INDEX idx_curso_nome ON Curso(Nome);
 CREATE INDEX idx_empresa_provincia ON Empresa(Provincia);
-ALTER TABLE Estudante
-ADD COLUMN Sexo TINYINT(1)() DEFAULT NULL
-AFTER Sobrenome;
-ALTER TABLE Estudante
-ADD COLUMN Sexo CHAR(1) NOT NULL COMMENT 'M = Masculino, F = Feminino';
+
 -- Tabela: login_logs
 DROP TABLE IF EXISTS login_logs;
 
