@@ -71,6 +71,9 @@ app.use('/api/faculdade', faculdadeRoutes);
 app.use('/api/curso', cursoRoutes);
 app.use('/api/provincias', provinciasRoutes);
 
+app.get('/test',(req, res) => {
+    res.json({mensagem: 'Backend vivo'})
+})
 app.get('/api/mensagem',(req, res) => {
     res.json({mensagem: 'Backend rodando'})
 })
