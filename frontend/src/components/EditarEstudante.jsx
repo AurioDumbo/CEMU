@@ -57,7 +57,7 @@ export default function EditarEstudante() {
 
   const fetchEstudante = async () => {
     try {
-      const res = await api.get(`http://localhost:5001/api/estudantes/${id}`);
+      const res = await api.get(`/api/estudantes/${id}`);
       const estudante = res.data;
       setFormData({
         Nome: estudante.nome || '',
@@ -78,7 +78,7 @@ export default function EditarEstudante() {
 
   const fetchCursos = async () => {
     try {
-      const res = await api.get('http://localhost:5001/api/curso');
+      const res = await api.get('/api/curso');
       setCursos(res.data);
  
     } catch (error) {
@@ -89,7 +89,7 @@ export default function EditarEstudante() {
 
   const fetchFaculdades = async () => {
     try {
-      const res = await api.get('http://localhost:5001/api/faculdade');
+      const res = await api.get('/api/faculdade');
       setFaculdades(res.data);
     } catch (error) {
       console.error('Erro ao carregar faculdades:', error);
@@ -117,7 +117,7 @@ export default function EditarEstudante() {
         Estado: 'Pendente'
       };
 
-      await api.put(`http://localhost:5001/api/estudantes/${id}`, dadosParaEnviar);
+      await api.put(`/api/estudantes/${id}`, dadosParaEnviar);
       toast.dismiss(toastId);
       toast.success('Estudante atualizado com sucesso!', {
         position: "top-right",

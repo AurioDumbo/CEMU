@@ -19,7 +19,7 @@ export default function LogsLogin() {
 
   const fetchLogs = async () => {
     try {
-      const response = await api.get('http://localhost:5001/api/usuarios/login-logs', {
+      const response = await api.get('/api/usuarios/login-logs', {
         params: {
           role: filters.role,
           startDate: filters.startDate,

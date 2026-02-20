@@ -16,7 +16,7 @@ export default function AdicionarCurso() {
     const fetchFaculdades = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        const response = await api.get('http://localhost:5001/api/faculdade', {
+        const response = await api.get('/api/faculdade', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setFaculdades(response.data);
@@ -41,7 +41,7 @@ export default function AdicionarCurso() {
     try {
       const token = sessionStorage.getItem('token');
       await api.post(
-        'http://localhost:5001/api/curso',
+        '/api/curso',
         {
           Nome: formData.nome,
           Faculdade_ID: formData.faculdadeId

@@ -13,7 +13,7 @@ export default function DetalhesEstagio() {
   useEffect(() => {
     const fetchEstagio = async () => {
       try {
-        const response = await api.get(`http://localhost:5001/api/estagios/${id}`);
+        const response = await api.get(`/api/estagios/${id}`);
         setEstagio(response.data);
       } catch (error) {
         console.error('Erro ao carregar detalhes do estágio:', error);

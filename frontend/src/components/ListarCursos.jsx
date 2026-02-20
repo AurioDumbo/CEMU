@@ -20,7 +20,7 @@ const ListarCursos = () => {
 
     const fetchCursos = async () => {
       try {
-        const response = await api.get('http://localhost:5001/api/curso');
+        const response = await api.get('/api/curso');
         setCursos(response.data);
         setLoading(false);
       } catch (error) {
@@ -39,7 +39,7 @@ const ListarCursos = () => {
 
   const confirmDelete = async () => {
     try {
-      await api.delete(`http://localhost:5001/api/curso/${deleteModal.cursoId}`);
+      await api.delete(`/api/curso/${deleteModal.cursoId}`);
       setCursos(cursos.filter(curso => curso.curso_id !== deleteModal.cursoId));
       toast.success('Curso excluído com sucesso');
     } catch (error) {

@@ -35,7 +35,7 @@ export default function EditarEmpresa() {
     const fetchEmpresa = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const res = await api.get(`http://localhost:5001/api/empresas/${id}`, {
+            const res = await api.get(`/api/empresas/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (!res.data) {
@@ -52,7 +52,7 @@ export default function EditarEmpresa() {
     const fetchProvincias = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const res = await api.get('http://localhost:5001/api/provincias', {
+            const res = await api.get('/api/provincias', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setProvincias(res.data);
@@ -65,7 +65,7 @@ export default function EditarEmpresa() {
     const fetchCursos = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const res = await api.get('http://localhost:5001/api/curso', {
+            const res = await api.get('/api/curso', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCursos(res.data);
@@ -83,7 +83,7 @@ export default function EditarEmpresa() {
             console.log('Fetching cursos for empresa ID:', id); 
             
             const res = await api.get(
-                `http://localhost:5001/api/empresa_curso/empresa/${id}`,
+                `/api/empresa_curso/empresa/${id}`,
                 { 
                     headers: { 
                         'Authorization': `Bearer ${token}`,
@@ -111,11 +111,11 @@ export default function EditarEmpresa() {
         e.preventDefault();
         try {
             const token = sessionStorage.getItem('token');
-            await api.put(`http://localhost:5001/api/empresas/${id}`, formData, {
+            await api.put(`/api/empresas/${id}`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             await api.put(
-                `http://localhost:5001/api/empresa_curso/empresa/${id}`,
+                `/api/empresa_curso/empresa/${id}`,
                 { cursos: cursosInteresse },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

@@ -20,7 +20,7 @@ export default function FaculdadesAdmin() {
   useEffect(() => {
     const fetchFaculdades = async () => {
       try {
-        const response = await api.get('http://localhost:5001/api/faculdade');
+        const response = await api.get('/api/faculdade');
         setFaculdades(response.data);
       } catch (error) {
         console.error('Erro ao carregar faculdades:', error);
@@ -40,13 +40,13 @@ export default function FaculdadesAdmin() {
     }
     try {
       await api.post(
-        'http://localhost:5001/api/faculdade',
+        '/api/faculdade',
         { Nome: formData.nome }
       );
       toast.success('Faculdade adicionada com sucesso!');
       setFormData({ nome: '' });
       setLoading(true);
-      const response = await api.get('http://localhost:5001/api/faculdade');
+      const response = await api.get('/api/faculdade');
       setFaculdades(response.data);
       setLoading(false);
     } catch (error) {
@@ -68,14 +68,14 @@ export default function FaculdadesAdmin() {
     }
     try {
       await api.put(
-        `http://localhost:5001/api/faculdade/${editId}`,
+        `/api/faculdade/${editId}`,
         { Nome: editNome }
       );
       toast.success('Faculdade atualizada!');
       setEditId(null);
       setEditNome('');
       setLoading(true);
-      const response = await api.get('http://localhost:5001/api/faculdade');
+      const response = await api.get('/api/faculdade');
       setFaculdades(response.data);
       setLoading(false);
     } catch (error) {
@@ -90,10 +90,10 @@ export default function FaculdadesAdmin() {
 
   const confirmDelete = async () => {
     try {
-      await api.delete(`http://localhost:5001/api/faculdade/${deleteModal.faculdadeId}`);
+      await api.delete(`/api/faculdade/${deleteModal.faculdadeId}`);
       toast.success('Faculdade excluída!');
       setLoading(true);
-      const response = await api.get('http://localhost:5001/api/faculdade');
+      const response = await api.get('/api/faculdade');
       setFaculdades(response.data);
     } catch (error) {
       console.error('Erro ao excluir faculdade:', error);

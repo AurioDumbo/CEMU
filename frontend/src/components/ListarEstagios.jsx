@@ -39,7 +39,7 @@ export default function ListarEstagios() {
   const fetchEstagios = async () => {
     try {
       setLoading(true);
-      const response = await api.get('http://localhost:5001/api/estagios');
+      const response = await api.get('/api/estagios');
       setEstagios(response.data);
     } catch (error) {
       console.error('Erro ao carregar estágios:', error);
@@ -151,7 +151,7 @@ export default function ListarEstagios() {
   const confirmDelete = async () => {
     try {
       await Promise.all(selectedIds.map(id => 
-        api.delete(`http://localhost:5001/api/estagios/${id}`)
+        api.delete(`/api/estagios/${id}`)
       ));
       toast.success('Estágios excluídos com sucesso!');
       fetchEstagios();

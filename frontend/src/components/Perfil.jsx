@@ -36,7 +36,7 @@ export default function Perfil() {
         }
 
         try {
-            const response = await api.get('http://localhost:5001/api/usuarios/perfil');
+            const response = await api.get('/api/usuarios/perfil');
             setUserData(response.data);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
@@ -72,7 +72,7 @@ export default function Perfil() {
                 return;
             }
             const response = await api.put(
-                'http://localhost:5001/api/usuarios/alterar-senha',
+                '/api/usuarios/alterar-senha',
                 { novaSenha: passwords.newPassword },
                 {
                     headers: {

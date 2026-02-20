@@ -24,7 +24,7 @@ export default function RegistrarEmpresa({ onSuccess }) {
     const fetchData = async () => {
       try {
         const [cursosResponse, provinciasResponse] = await Promise.all([
-          api.get('http://localhost:5001/api/curso'),
+          api.get('/api/curso'),
           axios.get('https://angolaprovinciasapi.ggwp.com.br/api/v1/provincias')
         ]);
         setCursos(cursosResponse.data);
@@ -112,10 +112,10 @@ export default function RegistrarEmpresa({ onSuccess }) {
         Status: formData.Status
       };
 
-      const response = await api.post('http://localhost:5001/api/empresas', empresaData);
+      const response = await api.post('/api/empresas', empresaData);
       const empresaId = response.data.id;
 
-      await api.post('http://localhost:5001/api/empresa_curso', {
+      await api.post('/api/empresa_curso', {
         empresa_id: empresaId,
         cursos: cursosInteressados
       });

@@ -49,8 +49,8 @@ const ListarRegistros = () => {
 
         console.log('Iniciando requisições para API');
         const [estudantesRes, empresasRes] = await Promise.all([
-          api.get('http://localhost:5001/api/estudantes'),
-          api.get('http://localhost:5001/api/empresas')
+          api.get('/api/estudantes'),
+          api.get('/api/empresas')
         ]);
 
         // Processar os dados dos estudantes para garantir que faculdade e curso estejam corretos
@@ -94,8 +94,8 @@ const ListarRegistros = () => {
       }
 
       const [estudantesRes, empresasRes] = await Promise.all([
-        api.get('http://localhost:5001/api/estudantes'),
-        api.get('http://localhost:5001/api/empresas')
+        api.get('/api/estudantes'),
+        api.get('/api/empresas')
       ]);
 
       const estudantesProcessados = estudantesRes.data.map(estudante => ({
@@ -129,7 +129,7 @@ const ListarRegistros = () => {
         navigate('/login');
         return;
       }
-      await api.delete(`http://localhost:5001/api/empresas/${id}`);
+      await api.delete(`/api/empresas/${id}`);
       toast.success('Empresa excluída com sucesso');
       await atualizarDados();
     } catch (error) {
@@ -151,7 +151,7 @@ const ListarRegistros = () => {
         navigate('/login');
         return;
       }
-      await api.delete(`http://localhost:5001/api/estudantes/${id}`);
+      await api.delete(`/api/estudantes/${id}`);
       toast.success('Estudante excluído com sucesso');
       await atualizarDados();
     } catch (error) {

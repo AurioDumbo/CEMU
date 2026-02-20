@@ -32,9 +32,9 @@ export default function RegistrarEstagio({ onSuccess }) {
     const fetchData = async () => {
       try {
         const [estRes, provRes, estagiosRes] = await Promise.all([
-          api.get('http://localhost:5001/api/estudantes'),
+          api.get('/api/estudantes'),
           axios.get('https://angolaprovinciasapi.ggwp.com.br/api/v1/provincias'),
-          api.get('http://localhost:5001/api/estagios')
+          api.get('/api/estagios')
         ]);
        
         const estudantesComEstagio = new Set(estagiosRes.data.map(estagio => estagio.Estudante_ID));
@@ -65,7 +65,7 @@ export default function RegistrarEstagio({ onSuccess }) {
         return;
       }
       try {
-        const res = await api.get(`http://localhost:5001/api/empresas/por-curso/${cursoId}`);
+        const res = await api.get(`/api/empresas/por-curso/${cursoId}`);
         console.log('Empresas retornadas:', res.data);
         setEmpresas(res.data);
       } catch {
@@ -179,7 +179,7 @@ export default function RegistrarEstagio({ onSuccess }) {
     });
 
     try {
-      await api.post('http://localhost:5001/api/estagios', payload);
+      await api.post('/api/estagios', payload);
       setFormData({
         Estudante_ID: '',
         Empresa_ID: '',

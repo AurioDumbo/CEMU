@@ -29,8 +29,8 @@ const RegistrarEstudante = ({ onSuccess }) => {
         }
 
         const [cursosResponse, faculdadesResponse] = await Promise.all([
-          api.get('http://localhost:5001/api/curso'),
-          api.get('http://localhost:5001/api/faculdade')
+          api.get('/api/curso'),
+          api.get('/api/faculdade')
         ]);
         setCursos(cursosResponse.data);
         setFaculdades(faculdadesResponse.data);
@@ -104,7 +104,7 @@ const RegistrarEstudante = ({ onSuccess }) => {
         ...formData,
         Estado: 'Pendente'
       };
-      const response = await api.post('http://localhost:5001/api/estudantes', dataToSend);
+      const response = await api.post('/api/estudantes', dataToSend);
 
       if (response.status === 201) {
         setFormData({

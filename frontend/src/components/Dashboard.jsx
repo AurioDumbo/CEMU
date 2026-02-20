@@ -42,10 +42,10 @@ export default function Dashboard() {
       try {
         setLoading(true);
 
-        const dashboardResponse = await api.get('http://localhost:5001/api/dashboard/data');
+        const dashboardResponse = await api.get('/api/dashboard/data');
         setDashboardData(dashboardResponse.data);
 
-        const provinciasResponse = await api.get('http://localhost:5001/api/dashboard/provincias');
+        const provinciasResponse = await api.get('/api/dashboard/provincias');
 
         const provinciasOrdenadas = provinciasResponse.data.sort((a, b) => b.percentagem - a.percentagem);
         let labels = [];
@@ -85,7 +85,7 @@ export default function Dashboard() {
         };
         setProvincesData(provinciasData);
 
-        const empresasResponse = await api.get('http://localhost:5001/api/dashboard/empresas');
+        const empresasResponse = await api.get('/api/dashboard/empresas');
         const empresasAtivas = empresasResponse.data
           .sort((a, b) => b.total - a.total)
           .slice(0, 3);

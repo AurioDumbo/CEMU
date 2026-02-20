@@ -23,10 +23,10 @@ export default function EditarCurso() {
         }
 
         const [cursoResponse, faculdadesResponse] = await Promise.all([
-          api.get(`http://localhost:5001/api/curso/${id}`, {
+          api.get(`/api/curso/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          api.get('http://localhost:5001/api/faculdade', {
+          api.get('/api/faculdade', {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -57,7 +57,7 @@ export default function EditarCurso() {
       }
 
       await api.put(
-        `http://localhost:5001/api/curso/${id}`,
+        `/api/curso/${id}`,
         {
           Nome: formData.nome,
           Faculdade_ID: formData.faculdadeId

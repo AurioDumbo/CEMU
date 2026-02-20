@@ -15,7 +15,7 @@ export default function NotificacoesEstagios() {
 
     const fetchNotificacoes = async () => {
       try {
-        const res = await api.get('http://localhost:5001/api/estagios/notificacoes/proximos?dias=5');
+        const res = await api.get('/api/estagios/notificacoes/proximos?dias=5');
         
         let filteredAComecar = res.data.aComecar;
         let filteredATerminar = res.data.aTerminar;
@@ -37,7 +37,7 @@ export default function NotificacoesEstagios() {
   }, []);
 
   useEffect(() => {
-    const socket = io('http://localhost:5001');
+    const socket = io('');
     socket.on('notificacaoEstagio', (data) => {
       setNotificacoes((prev) => {
 
