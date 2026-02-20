@@ -24,7 +24,7 @@ export default function UsuariosAdmin() {
   useEffect(() => {
     const fetchUsuarios = async () => {
       try {
-        const res = await api.get('http://localhost:5001/api/usuarios');
+        const res = await api.get('/api/usuarios');
         setUsuarios(res.data);
 
         if (id) {
@@ -50,11 +50,11 @@ export default function UsuariosAdmin() {
   const HANDLE_SUBMIT = async (e) => {
     e.preventDefault();
     try {
-      await api.post('http://localhost:5001/api/usuarios/register', formData);
+      await api.post('/api/usuarios/register', formData);
       toast.success('Usuário criado com sucesso!');
       setFormData({ email: '', password: '', role: '3' });
       setLoading(true);
-      const res = await api.get('http://localhost:5001/api/usuarios');
+      const res = await api.get('/api/usuarios');
       setUsuarios(res.data);
       setLoading(false);
     } catch (error) {
@@ -85,7 +85,7 @@ export default function UsuariosAdmin() {
       }
 
       const response = await api.put(
-        `http://localhost:5001/api/usuarios/${editId}`,
+        `/api/usuarios/${editId}`,
         {
           email: editData.email,
           role: editData.role
@@ -94,7 +94,7 @@ export default function UsuariosAdmin() {
 
       if (response.status === 200) {
         toast.success('Usuário atualizado com sucesso!');
-        const res = await api.get('http://localhost:5001/api/usuarios');
+        const res = await api.get('/api/usuarios');
         setUsuarios(res.data);
         setEditId(null);
         setEditData({ email: '', role: '3' });
@@ -115,9 +115,9 @@ export default function UsuariosAdmin() {
   const handleDelete = async (id) => {
     if (!window.confirm('Tem certeza que deseja excluir este usuário?')) return;
     try {
-      await api.delete(`http://localhost:5001/api/usuarios/${id}`);
+      await api.delete(`/api/usuarios/${id}`);
       toast.success('Usuário excluído com sucesso!');
-      const res = await api.get('http://localhost:5001/api/usuarios');
+      const res = await api.get('/api/usuarios');
       setUsuarios(res.data);
     } catch (error) {
       console.error('Erro ao excluir usuário:', error);
