@@ -36,12 +36,12 @@ const login = async (req, res) => {
             console.log('¿Password válida?:', isPasswordValid);
         }
         if (!user) {
-            return res.status(401).json({ message: 'Credenciais inválidas' });
+            return res.status(401).json({ message: 'Credenciais inválidas user' });
         }
 
         const isPasswordValid = await compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Credenciais inválidas' });
+            return res.status(401).json({ message: 'Credenciais inválidas pass' });
         }
 
         const token = sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
