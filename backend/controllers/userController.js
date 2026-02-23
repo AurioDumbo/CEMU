@@ -28,6 +28,12 @@ const login = async (req, res) => {
 
     try {
         const user = await User.findByEmail(email);
+        console.log('Usuario encontrado:', user ? 'SÍ' : 'NO');
+        if (user) {
+            console.log('Password en BD:', user.password); // Si sale undefined, aquí está el error.
+            const isPasswordValid = await compare(password, user.password);
+            console.log('¿Password válida?:', isPasswordValid);
+        }
         if (!user) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
