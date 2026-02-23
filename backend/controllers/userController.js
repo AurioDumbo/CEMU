@@ -31,6 +31,7 @@ const login = async (req, res) => {
         console.log('Usuario encontrado:', user ? 'SÍ' : 'NO');
         if (user) {
             console.log('Password en BD:', user.password); // Si sale undefined, aquí está el error.
+            console.log('Pass recibido:', password);
             const isPasswordValid = await compare(password, user.password);
             console.log('¿Password válida?:', isPasswordValid);
         }
