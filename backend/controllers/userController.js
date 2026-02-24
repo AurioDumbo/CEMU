@@ -45,7 +45,7 @@ const login = async (req, res) => {
             return res.status(401).json({ message: 'Credenciais inválidas pass' });
         }
         console.log("REVISIÓN DE SECRET:", process.env.JWT_SECRET);
-        const token = sign({ id: user.id, role: user.role }, "2134054a9a9b1eb8734b01f9c0759d7c618d2aca0d547e7d925d0ab1fc82fa7d", { expiresIn: '1h' });
+        const token = sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
 
         await LoginLog.create({ userId: user.id });
