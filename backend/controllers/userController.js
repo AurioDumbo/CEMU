@@ -4,6 +4,7 @@ const User = require('../models/user');
 const LoginLog = require('../models/LoginLog');
 const db = require('../config/db');
 
+require('dotenv').config();
 const register = async (req, res) => {
     const { email, password, role } = req.body;
 
