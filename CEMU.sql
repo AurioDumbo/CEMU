@@ -8,13 +8,13 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Tabela 1: Faculdade
-CREATE TABLE Faculdade (
+CREATE TABLE IF NOT EXISTS Faculdade (
     ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     Nome VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- Tabela 2: Curso
-CREATE TABLE Curso (
+CREATE TABLE IF NOT EXISTS Curso (
     ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     Nome VARCHAR(60) NOT NULL UNIQUE,
     Faculdade_ID INT UNSIGNED,
@@ -22,7 +22,7 @@ CREATE TABLE Curso (
 );
 
 -- Tabela 3: Estudantes
-CREATE TABLE Estudante (
+CREATE TABLE IF NOT EXISTS Estudante (
     ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     Nome VARCHAR(50) NOT NULL,
     Sobrenome VARCHAR(40) NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE Estudante (
 );
 
 -- Tabela 4: Empresas 
-CREATE TABLE Empresa (
+CREATE TABLE IF NOT EXISTS Empresa (
     ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     NIF VARCHAR(20) UNIQUE NOT NULL,
     Nome VARCHAR(100) NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE Empresa (
 );
 
 -- Tabela 5: Relação Empresa - Cursos
-CREATE TABLE Empresa_Curso (
+CREATE TABLE IF NOT EXISTS Empresa_Curso (
     Empresa_ID INT UNSIGNED NOT NULL,
     Curso_ID INT UNSIGNED NOT NULL,
     PRIMARY KEY (Empresa_ID, Curso_ID),
@@ -57,7 +57,7 @@ CREATE TABLE Empresa_Curso (
 );
 
 -- Tabela 6: Estágios
-CREATE TABLE Estagio (
+CREATE TABLE IF NOT EXISTS Estagio (
     ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     Estudante_ID INT UNSIGNED,
     Empresa_ID INT UNSIGNED,
@@ -76,12 +76,12 @@ CREATE TABLE Estagio (
 );
 
 -- Tabela 7: FeedbackEstagio
-CREATE TABLE FeedbackEstagio (
+CREATE TABLE IF NOT EXISTS FeedbackEstagio (
     ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     Estagio_ID INT UNSIGNED,
     Estudante_ID INT UNSIGNED,
     Empresa_ID INT UNSIGNED,
-    Feedback TINYINT NOT NULL CHECK (Feedback BETWEEN 1 AND 5) COMMENT '1 = Péssimo, 2 = Ruim, 3 = Mediano, 4 = Bom, 5 = Excelente',
+    Feedback TINYINT NOT NULL COMMENT '1 = Péssimo, 2 = Ruim, 3 = Mediano, 4 = Bom, 5 = Excelente' CHECK (Feedback BETWEEN 1 AND 5) ,
     Comentario TEXT,
     DataFeedback TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (Estagio_ID) REFERENCES Estagio (ID) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -99,7 +99,11 @@ DROP TABLE IF EXISTS login_logs;
 
 CREATE TABLE login_logs (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
     login_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+<<<<<<< Updated upstream
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+=======
+    FOREIGN KEY (user_id) REFERENCES users(id)  ON DELETE CASCADE ON UPDATE CASCADE
+>>>>>>> Stashed changes
 );
