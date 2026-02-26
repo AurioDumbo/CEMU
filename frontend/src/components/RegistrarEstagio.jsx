@@ -214,13 +214,13 @@ export default function RegistrarEstagio({ onSuccess }) {
             name="Estudante_ID"
             value={estudantes.find(e => String(e.id) === String(formData.Estudante_ID)) ? {
               value: formData.Estudante_ID,
-              label: estudantes.find(e => String(e.id) === String(formData.Estudante_ID))?.nome ||
+              label: estudantes.find(e => String(e.id) === String(formData.Estudante_ID))?.nome_completo ||
                 `${estudantes.find(e => String(e.id) === String(formData.Estudante_ID))?.Nome || ''} ${estudantes.find(e => String(e.id) === String(formData.Estudante_ID))?.Sobrenome || ''}`
             } : null}
             onChange={option => setFormData(prev => ({ ...prev, Estudante_ID: option ? option.value : '' }))}
             options={estudantes.map(estudante => ({
               value: estudante.id,
-              label: estudante.nome || `${estudante.Nome || ''} ${estudante.Sobrenome || ''}`
+              label: estudante.nome_completo || `${estudante.Nome || ''} ${estudante.Sobrenome || ''}`
             }))}
             placeholder="Selecione ou pesquise o estudante"
             isClearable

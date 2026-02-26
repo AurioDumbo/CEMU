@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/axiosInstance';
+import editIcon from '../assets/icons/edit.svg';
+import deleteIcon from '../assets/icons/delete.svg';
+import Modal from './Modal';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -18,6 +21,9 @@ const RegistrarEstudante = ({ onSuccess }) => {
     Sexo: ''
   });
   const [errors, setErrors] = useState({});
+  const [estudantes, setEstudantes] = useState([]); 
+  const [editandoId, setEditandoId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, estudanteId: null });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,11 +34,13 @@ const RegistrarEstudante = ({ onSuccess }) => {
           return;
         }
 
-        const [cursosResponse, faculdadesResponse] = await Promise.all([
+        const [cursosResponse, faculdadesResponse, estudantesResponse] = await Promise.all([
           api.get('/api/curso'),
-          api.get('/api/faculdade')
+          api.get('/api/faculdade'),
+          api.get('/api/estudantes')
         ]);
         setCursos(cursosResponse.data);
+        setEstudantes(estudantesResponse.data);
         setFaculdades(faculdadesResponse.data);
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
@@ -104,9 +112,17 @@ const RegistrarEstudante = ({ onSuccess }) => {
         ...formData,
         Estado: 'Pendente'
       };
-      const response = await api.post('/api/estudantes', dataToSend);
+      if (editandoId) {
+        await api.put(`/api/estudantes/${editandoId}`, dataToSend);
+        toast.success('Estudante atualizado com sucesso!');
+        setEditandoId(null);
+      } else {
+        await api.post('/api/estudantes', dataToSend);
+        toast.success('Estudante registrado com sucesso!');
+      }
+        const estudantesAtualizados = await api.get('/api/estudantes');
+        setEstudantes(estudantesAtualizados.data);
 
-      if (response.status === 201) {
         setFormData({
           Nome: '',
           Sobrenome: '',
@@ -118,7 +134,7 @@ const RegistrarEstudante = ({ onSuccess }) => {
         });
         if (onSuccess) onSuccess();
         toast.success('Estudante registrado com sucesso!');
-      }
+      
     } catch (error) {
       console.error('Erro ao registrar estudante:', error);
       if (error.response) {
@@ -143,7 +159,43 @@ const RegistrarEstudante = ({ onSuccess }) => {
     }
   };
 
+  const handleDelete = (id) => {
+    setDeleteModal({ isOpen: true, estudanteId: id });
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await api.delete(`/api/estudantes/${deleteModal.estudanteId}`);
+      toast.success('Estudante excluído!');
+      //setLoading(true);
+      const response = await api.get('/api/estudantes');
+      setEstudantes(response.data);
+    } catch (error) {
+      console.error('Erro ao excluir estudante:', error);
+      toast.error('Erro ao excluir estudante');
+    } finally {
+      setDeleteModal({ isOpen: false, estudanteId: null });
+      //setLoading(false);
+    }
+  };
+
+const handleEdit = (estudante) => {
+  setFormData({
+    Nome: estudante.nome,
+    Sobrenome: estudante.sobrenome,
+    Curso_ID: estudante.curso?.id || '',
+    Telefone: estudante.telefone,
+    Email: estudante.email,
+    Faculdade_ID: estudante.faculdade?.id || '',
+    Curso_ID: estudante.curso?.id || '',
+    Sexo: estudante.sexo
+  });
+  setEditandoId(estudante.id);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
         <div className="sm:col-span-3">
@@ -280,6 +332,80 @@ const RegistrarEstudante = ({ onSuccess }) => {
         </button>
       </div>
     </form>
+
+    <div className="mt-10">
+    <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      Lista de Estudantes
+    </h2>
+
+  <div className="overflow-x-auto bg-white shadow rounded-lg">
+    <table className="min-w-full divide-y divide-gray-200">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nome e Sobrenome</th>
+          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Faculdade</th>
+          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>          
+          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {estudantes.length === 0 ? (
+          <tr>
+            <td colSpan="5" className="px-4 py-4 text-center text-gray-500">
+              Nenhum estudante registrado.
+            </td>
+          </tr>
+        ) : (
+          estudantes.map((estudante) => (
+            <tr key={estudante.id}>
+              <td className="px-4 py-2">{estudante.nome_completo}</td>
+              <td className="px-4 py-2">{estudante.faculdade.nome}</td>
+              <td className="px-4 py-2">{estudante.curso.nome}</td>              
+              <td className="px-4 py-2">
+                <span className={`px-2 py-1 rounded text-white text-xs
+                  ${estudante.status === 'Ativo' ? 'bg-green-500' :
+                    estudante.status === 'Pendente' ? 'bg-yellow-500' :
+                    'bg-red-500'}`}>
+                  {estudante.status}
+                </span>
+              </td>
+              <td className="flex gap-2 py-2">
+                <button
+                  onClick={() => handleEdit(estudante)}
+                  className="p-2 rounded hover:bg-blue-50"
+                  title="Editar"
+                >
+                  <img src={editIcon} alt="Editar" className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleDelete(estudante.id)}
+                  className="p-2 rounded hover:bg-red-50"
+                  title="Excluir"
+                >
+                  <img src={deleteIcon} alt="Excluir" className="w-5 h-5" />
+                </button>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+
+    <Modal
+            isOpen={deleteModal.isOpen}
+            onClose={() => setDeleteModal({ isOpen: false, estudanteId: null })}
+            title="Confirmar Exclusão"
+            message="Tem certeza que deseja excluir este estudante? Esta ação não pode ser desfeita."
+            type="error"
+            onConfirm={confirmDelete}
+          />
+  </div>
+</div>
+
+</>
+
   );
 };
 

@@ -49,6 +49,8 @@ async function getAllEstudantes(req, res) {
             SELECT 
                 e.ID as id,
                 CONCAT(e.Nome, ' ', e.Sobrenome) as nome_completo,
+                e.Sobrenome as sobrenome,
+                e.nome as nome,
                 e.Telefone as telefone,
                 e.Email as email,
                 e.Estado as status,
@@ -65,7 +67,9 @@ async function getAllEstudantes(req, res) {
         
         const estudantesFormatados = rows.map(row => ({
             id: row.id,
-            nome: row.nome_completo,
+            nome: row.nome,
+            sobrenome: row.sobrenome,
+            nome_completo: row.nome_completo,
             telefone: row.telefone || 'Não informado',
             email: row.email || 'Não informado',
             status: row.status,

@@ -137,7 +137,7 @@ export default function EditarEstagio() {
               <option value="">Selecione o estudante</option>
               {estudantes.map(est => (
                 <option key={est.id || est.ID} value={est.id || est.ID}>
-                  {est.nome || `${est.Nome} ${est.Sobrenome}`}
+                  {est.nome_completo || `${est.Nome} ${est.Sobrenome}`}
                 </option>
               ))}
             </select>
