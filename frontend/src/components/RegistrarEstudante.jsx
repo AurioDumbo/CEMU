@@ -5,6 +5,7 @@ import deleteIcon from '../assets/icons/delete.svg';
 import Modal from './Modal';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const RegistrarEstudante = ({ onSuccess }) => {
   const navigate = useNavigate();
@@ -24,6 +25,9 @@ const RegistrarEstudante = ({ onSuccess }) => {
   const [estudantes, setEstudantes] = useState([]); 
   const [editandoId, setEditandoId] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, estudanteId: null });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const studentsPerPage = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,11 +60,14 @@ const RegistrarEstudante = ({ onSuccess }) => {
         curso.faculdade_id === parseInt(formData.Faculdade_ID)
       );
       setCursosFiltrados(cursosDaFaculdade);
-      setFormData(prev => ({ ...prev, Curso_ID: '' }));
+      if (!editandoId) {
+        setFormData(prev => ({ ...prev, Curso_ID: '' }));
+      }
+
     } else {
       setCursosFiltrados([]);
     }
-  }, [formData.Faculdade_ID, cursos]);
+  }, [formData.Faculdade_ID, cursos, editandoId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -183,17 +190,41 @@ const handleEdit = (estudante) => {
   setFormData({
     Nome: estudante.nome,
     Sobrenome: estudante.sobrenome,
-    Curso_ID: estudante.curso?.id || '',
-    Telefone: estudante.telefone,
-    Email: estudante.email,
+    Telefone: estudante.telefone? estudante.telefone : '',
+    Email: estudante.email? estudante.email : '',
     Faculdade_ID: estudante.faculdade?.id || '',
     Curso_ID: estudante.curso?.id || '',
-    Sexo: estudante.sexo
+    Sexo: estudante.sexo? estudante.sexo : ''
   });
   setEditandoId(estudante.id);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+// FILTRADO DINÁMICO
+  const filteredStudents = estudantes.filter((estudante) =>
+    estudante.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    estudante.curso?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    estudante.faculdade?.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // PAGINACIÓN
+  const indexOfLast = currentPage * studentsPerPage;
+  const indexOfFirst = indexOfLast - studentsPerPage;
+  const currentStudents = filteredStudents.slice(indexOfFirst, indexOfLast);
+
+  const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
+
+  const goToPrevious = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNext = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
   return (
     <>
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -332,7 +363,19 @@ const handleEdit = (estudante) => {
         </button>
       </div>
     </form>
-
+    
+    <div className="mb-4">
+      <input
+        type="text"
+        placeholder="Pesquisar..."
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(1); 
+        }}
+        className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
+      />
+    </div>
     <div className="mt-10">
     <h2 className="text-lg font-semibold text-gray-800 mb-4">
       Lista de Estudantes
@@ -344,7 +387,7 @@ const handleEdit = (estudante) => {
         <tr>
           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nome e Sobrenome</th>
           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Faculdade</th>
-          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>          
+          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
           <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
 
@@ -358,11 +401,11 @@ const handleEdit = (estudante) => {
             </td>
           </tr>
         ) : (
-          estudantes.map((estudante) => (
+          currentStudents.map((estudante) => (
             <tr key={estudante.id}>
               <td className="px-4 py-2">{estudante.nome_completo}</td>
               <td className="px-4 py-2">{estudante.faculdade.nome}</td>
-              <td className="px-4 py-2">{estudante.curso.nome}</td>              
+              <td className="px-4 py-2">{estudante.curso.nome}</td>
               <td className="px-4 py-2">
                 <span className={`px-2 py-1 rounded text-white text-xs
                   ${estudante.status === 'Ativo' ? 'bg-green-500' :
@@ -392,8 +435,39 @@ const handleEdit = (estudante) => {
         )}
       </tbody>
     </table>
+    <div className="flex items-center justify-center mt-6 space-x-4">
 
-    <Modal
+      {/* Botón Anterior */}
+      <button
+        onClick={goToPrevious}
+        disabled={currentPage === 1}
+        className={`flex items-center px-4 py-2 rounded-md shadow 
+          ${currentPage === 1 
+            ? "bg-gray-300 cursor-not-allowed" 
+            : "bg-red-600 text-white hover:bg-red-700"}`}
+      >
+        <FaChevronLeft className="mr-2" />
+      </button>
+
+      {/* Número de página */}
+      <span className="px-4 py-2 text-sm font-medium">
+        Página {currentPage} de {totalPages || 1}
+      </span>
+
+      {/* Botón Próximo */}
+      <button
+        onClick={goToNext}
+        disabled={currentPage === totalPages || totalPages === 0}
+        className={`flex items-center px-4 py-2 rounded-md shadow 
+          ${currentPage === totalPages || totalPages === 0
+            ? "bg-gray-300 cursor-not-allowed"
+            : "bg-red-600 text-white hover:bg-red-700"}`}
+      >
+        <FaChevronRight className="ml-2" />
+      </button>
+
+    </div>
+      <Modal
             isOpen={deleteModal.isOpen}
             onClose={() => setDeleteModal({ isOpen: false, estudanteId: null })}
             title="Confirmar Exclusão"

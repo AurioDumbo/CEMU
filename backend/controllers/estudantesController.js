@@ -70,8 +70,8 @@ async function getAllEstudantes(req, res) {
             nome: row.nome,
             sobrenome: row.sobrenome,
             nome_completo: row.nome_completo,
-            telefone: row.telefone || 'Não informado',
-            email: row.email || 'Não informado',
+            telefone: row.telefone || ' ',
+            email: row.email || ' ',
             status: row.status,
             sexo: row.sexo,
             curso: {
@@ -120,8 +120,8 @@ async function getEstudanteById(req, res) {
             id: rows[0].id,
             nome: rows[0].nome,
             sobrenome: rows[0].sobrenome,
-            telefone: rows[0].telefone || 'Não informado',
-            email: rows[0].email || 'Não informado',
+            telefone: rows[0].telefone || ' ',
+            email: rows[0].email || ' ',
             status: rows[0].status,
             sexo: rows[0].sexo,
             curso: {

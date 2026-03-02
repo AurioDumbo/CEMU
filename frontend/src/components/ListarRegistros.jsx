@@ -58,11 +58,11 @@ const ListarRegistros = () => {
           ...estudante,
           faculdade: {
             ...estudante.faculdade,
-            nome: estudante.faculdade?.nome || estudante.faculdade_nome || 'Não informado'
+            nome: estudante.faculdade?.nome || estudante.faculdade_nome || ' '
           },
           curso: {
             ...estudante.curso,
-            nome: estudante.curso?.nome || estudante.curso_nome || 'Não informado'
+            nome: estudante.curso?.nome || estudante.curso_nome || ' '
           }
         }));
 
@@ -102,11 +102,11 @@ const ListarRegistros = () => {
         ...estudante,
         faculdade: {
           ...estudante.faculdade,
-          nome: estudante.faculdade?.nome || estudante.faculdade_nome || 'Não informado'
+          nome: estudante.faculdade?.nome || estudante.faculdade_nome || ' '
         },
         curso: {
           ...estudante.curso,
-          nome: estudante.curso?.nome || estudante.curso_nome || 'Não informado'
+          nome: estudante.curso?.nome || estudante.curso_nome || ' '
         }
       }));
 
